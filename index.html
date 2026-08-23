@@ -55,8 +55,34 @@
             <input id="searchInput" type="search" placeholder="Search transactions..." />
           </div>
           <button class="round-btn" id="themeBtn" title="Toggle theme">☾</button>
-          <button class="round-btn notification" id="notifyBtn" title="Notifications">♢<i></i></button>
-          <button class="profile" id="profileBtn"><span class="avatar small">UT</span><span>Utkarsh</span><b>⌄</b></button>
+          <div class="profile-wrap">
+            <button class="round-btn notification" id="notifyBtn" title="Notifications">♢<i></i></button>
+            <div class="profile-dropdown" id="notifyDropdown" hidden style="width: 250px;">
+              <div style="padding:4px 12px;font-size:10px;font-weight:bold;color:var(--muted)">Notifications (3)</div>
+              <hr>
+              <div class="dropdown-item" style="cursor:default">
+                <b style="color:var(--text);font-size:11px">Security Alert</b><br>
+                <span style="font-size:9px;color:var(--muted)">New login from a recognized device</span>
+              </div>
+              <div class="dropdown-item" style="cursor:default">
+                <b style="color:var(--text);font-size:11px">Bill Reminder</b><br>
+                <span style="font-size:9px;color:var(--muted)">Car Insurance due in 2 days</span>
+              </div>
+              <div class="dropdown-item" style="cursor:default">
+                <b style="color:var(--text);font-size:11px">Money Received</b><br>
+                <span style="font-size:9px;color:var(--muted)">Received $150 from Alex</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-wrap">
+            <button class="profile" id="profileBtn"><span class="avatar small">UT</span><span>Utkarsh</span><b>⌄</b></button>
+            <div class="profile-dropdown" id="profileDropdown" hidden>
+              <button class="dropdown-item">My Account</button>
+              <button class="dropdown-item">Preferences</button>
+              <hr>
+              <button class="dropdown-item text-red" id="dropdownLogout">Log out</button>
+            </div>
+          </div>
         </div>
       </header>
 

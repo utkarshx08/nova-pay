@@ -233,9 +233,52 @@ document.addEventListener("keydown", e=>{
   if(e.key === "Escape") $("#modalBackdrop").classList.remove("open");
 });
 $("#themeBtn").onclick=()=>{document.body.classList.toggle("light");showToast("Theme toggled");};
-$("#notifyBtn").onclick=()=>showToast("You have 3 new notifications");
-$("#profileBtn").onclick=()=>showToast("Profile menu opened");
-$("#helpBtn").onclick=()=>showToast("Help center opened");
+$("#notifyBtn").onclick=(e)=> {
+  e.stopPropagation();
+  const dropdown = $("#notifyDropdown");
+  if(dropdown) {
+    const wasHidden = dropdown.hidden;
+    $$(".profile-dropdown").forEach(d => d.hidden = true);
+    dropdown.hidden = !wasHidden;
+  }
+};
+function openHelpModal() {
+  $("#modalContent").innerHTML = `<h2>Help Center</h2><p>How can we help you today?</p>
+    <div class="form">
+      <div style="margin-bottom:10px">
+        <b style="color:var(--text);font-size:11px">How do I transfer money?</b>
+        <p style="margin-top:4px">Use the "Transfer" button in the Quick Actions menu on your dashboard.</p>
+      </div>
+      <div style="margin-bottom:10px">
+        <b style="color:var(--text);font-size:11px">Where is my card?</b>
+        <p style="margin-top:4px">Navigate to the Cards section to view or request a new physical card.</p>
+      </div>
+      <button class="primary" id="closeHelpBtn" style="margin-top:10px">Contact Support</button>
+    </div>`;
+  $("#modalBackdrop").classList.add("open");
+  $("#closeHelpBtn").onclick = () => {
+    showToast("Support request initiated");
+    $("#modalBackdrop").classList.remove("open");
+  };
+}
+
+$("#profileBtn").onclick=(e)=> {
+  e.stopPropagation();
+  const dropdown = $("#profileDropdown");
+  if(dropdown) {
+    const wasHidden = dropdown.hidden;
+    $$(".profile-dropdown").forEach(d => d.hidden = true);
+    dropdown.hidden = !wasHidden;
+  }
+};
+document.addEventListener("click", e => {
+  if(!e.target.closest(".profile-dropdown")) {
+    $$(".profile-dropdown").forEach(d => d.hidden = true);
+  }
+});
+if($("#dropdownLogout")) $("#dropdownLogout").onclick=()=>showToast("Logged out successfully");
+
+$("#helpBtn").onclick=openHelpModal;
 $("#logoutBtn").onclick=()=>showToast("Demo logout — session kept for preview");
 $("#searchInput").oninput=e=>{
   state.activeSearch = e.target.value;
