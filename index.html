@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaPay — Finance Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span></div>
+        <span>NovaPay</span>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-section="dashboard" title="Dashboard">
+          <span class="icon">⌂</span><span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-section="transactions" title="Transactions">
+          <span class="icon">↕</span><span>Transactions</span>
+        </button>
+        <button class="nav-item" data-section="cards" title="Cards">
+          <span class="icon">▣</span><span>Cards</span>
+        </button>
+        <button class="nav-item" data-section="payments" title="Payments">
+          <span class="icon">◉</span><span>Payments</span>
+        </button>
+        <button class="nav-item" data-section="analytics" title="Analytics">
+          <span class="icon">▥</span><span>Analytics</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-section="settings"><span class="icon">⚙</span><span>Settings</span></button>
+        <button class="nav-item" id="helpBtn"><span class="icon">?</span><span>Help center</span></button>
+        <div class="mini-user">
+          <div class="avatar">UT</div>
+          <div><strong>Utkarsh</strong><small>Personal account</small></div>
+          <button id="logoutBtn" aria-label="Log out">↗</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Personal account</p>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="top-actions">
+          <div class="search">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="Search transactions..." />
+          </div>
+          <button class="round-btn" id="themeBtn" title="Toggle theme">☾</button>
+          <button class="round-btn notification" id="notifyBtn" title="Notifications">♢<i></i></button>
+          <button class="profile" id="profileBtn"><span class="avatar small">UT</span><span>Utkarsh</span><b>⌄</b></button>
+        </div>
+      </header>
+
+      <section class="content" id="dashboardSection">
+        <div class="hero-grid">
+          <div class="balance-card gradient-card">
+            <div class="card-top"><span>Available balance</span><button class="dots">•••</button></div>
+            <div class="balance-row"><strong id="balance">$12,480.00</strong><span class="balance-up">+8.4%</span></div>
+            <div class="card-bottom"><span>**** 4832</span><span>VISA</span></div>
+          </div>
+
+          <div class="transfer-card">
+            <div class="section-heading"><div><p class="eyebrow">Quick action</p><h2>Move money</h2></div><span class="spark">✦</span></div>
+            <div class="quick-actions">
+              <button data-action="add"><span>＋</span><b>Add money</b><small>Top up account</small></button>
+              <button data-action="transfer"><span>↗</span><b>Transfer</b><small>Send money</small></button>
+              <button data-action="request"><span>↓</span><b>Request</b><small>Ask for money</small></button>
+            </div>
+          </div>
+
+          <div class="mini-card">
+            <div class="card-top"><span>Monthly spending</span><span class="trend">+12%</span></div>
+            <strong>$3,842</strong>
+            <div class="progress"><span style="width:68%"></span></div>
+            <small>$5,600 monthly limit</small>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">Balance</p><h2>Cash flow</h2></div>
+              <select id="chartRange"><option>Last 12 months</option><option>Last 6 months</option><option>Last 30 days</option></select>
+            </div>
+            <div class="chart-wrap">
+              <div class="y-labels"><span>$6k</span><span>$4k</span><span>$2k</span><span>$0</span></div>
+              <div class="chart-area" id="chart">
+                <div class="grid-line l1"></div><div class="grid-line l2"></div><div class="grid-line l3"></div><div class="grid-line l4"></div>
+                <div class="bars" id="bars"></div>
+              </div>
+            </div>
+            <div class="x-labels" id="xLabels"></div>
+            <div class="chart-legend"><span><i class="income-dot"></i> Income</span><span><i class="expense-dot"></i> Expenses</span></div>
+          </div>
+
+          <div class="panel activity-panel">
+            <div class="panel-head"><div><p class="eyebrow">Latest</p><h2>Recent activity</h2></div><button class="link-btn" data-section="transactions">View all</button></div>
+            <div class="activity-list" id="activityList"></div>
+          </div>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="panel history-panel">
+            <div class="panel-head"><div><p class="eyebrow">Transactions</p><h2>History</h2></div><button class="link-btn" data-section="transactions">View all</button></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>Merchant</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody id="historyBody"></tbody></table>
+            </div>
+          </div>
+          <div class="panel upcoming-panel">
+            <div class="panel-head"><div><p class="eyebrow">Next 30 days</p><h2>Upcoming payments</h2></div><button class="icon-btn" id="addPaymentBtn">＋</button></div>
+            <div id="paymentList"></div>
+          </div>
+        </div>
+
+        <div class="panel ai-insights-panel" id="aiInsightsPanel" aria-live="polite">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Smart assistant</p>
+              <h2>✦ Nova AI Insights</h2>
+            </div>
+          </div>
+          <div class="ai-insights-list" id="aiInsightsList"></div>
+        </div>
+      </section>
+
+      <section class="content hidden-section" id="transactionsSection"></section>
+      <section class="content hidden-section" id="cardsSection"></section>
+      <section class="content hidden-section" id="paymentsSection"></section>
+      <section class="content hidden-section" id="analyticsSection"></section>
+      <section class="content hidden-section" id="settingsSection"></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="modal-close" id="modalClose">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <button class="nova-ai-fab" id="novaAIFab" aria-label="Open Nova AI assistant" title="Ask Nova AI">
+    <span class="fab-icon" aria-hidden="true">✦</span>
+    <span class="fab-label">Ask Nova AI</span>
+  </button>
+
+  <section class="nova-ai-panel" id="novaAIPanel" aria-label="Nova AI chat panel" aria-hidden="true">
+    <header class="nova-ai-header">
+      <div class="nova-ai-title-wrap">
+        <h3>✦ Nova AI</h3>
+        <p>Your personal financial assistant</p>
+      </div>
+      <div class="nova-ai-actions">
+        <button class="nova-ai-menu" id="novaAIMenu" aria-label="Nova AI menu" title="Conversation menu">⋯</button>
+        <button class="nova-ai-min" id="novaAIMinimize" aria-label="Minimize Nova AI" title="Minimize">−</button>
+        <button class="nova-ai-close" id="novaAIClose" aria-label="Close Nova AI" title="Close">×</button>
+      </div>
+      <div class="nova-ai-dropdown" id="novaAIDropdown" hidden>
+        <button id="novaAIClearChat" aria-label="Clear conversation">Clear conversation</button>
+      </div>
+    </header>
+
+    <div class="nova-ai-messages" id="novaAIMessages" tabindex="0" aria-label="Conversation messages"></div>
+
+    <div class="nova-ai-quick" id="novaAIQuick"></div>
+
+    <form class="nova-ai-input-wrap" id="novaAIForm" novalidate>
+      <input
+        id="novaAIInput"
+        type="text"
+        placeholder="Ask Nova AI anything..."
+        aria-label="Ask Nova AI anything"
+        maxlength="400"
+      />
+      <button id="novaAISend" type="submit" aria-label="Send message" disabled>➤</button>
+    </form>
+  </section>
+
+  <script src="script.js"></script>
+  <script src="ai/financial-analysis.js"></script>
+  <script src="ai/nova-ai.js"></script>
+</body>
+</html>
