@@ -101,3 +101,38 @@ body.light .dropdown-item:hover{background:#f4f4f9}
 
 @media(max-width:1100px){.sidebar{width:75px;padding:24px 10px}.brand span:last-child,.nav-item span:not(.icon),.mini-user>div:not(.avatar),.mini-user>button{display:none}.nav-item{justify-content:center}.main{margin-left:75px;width:calc(100% - 75px)}.hero-grid{grid-template-columns:1fr 1fr}.mini-card{grid-column:1/-1}.stats-grid,.bottom-grid{grid-template-columns:1fr}.topbar{padding:20px}.content{padding:20px}.search{width:180px}}
 @media(max-width:700px){.topbar{height:auto;gap:15px;align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}.search{order:3;width:100%}.hero-grid{grid-template-columns:1fr}.mini-card{grid-column:auto}.quick-actions{grid-template-columns:1fr}.content{padding:16px}.topbar{padding:16px}.profile span:not(.avatar),.profile b{display:none}.cards-showcase{grid-template-columns:1fr}.ai-insights-list{grid-template-columns:1fr}.sidebar{width:62px}.main{margin-left:62px;width:calc(100% - 62px)}.nova-ai-fab{left:50%;bottom:12px;transform:translateX(-50%);padding:0 14px;height:52px}.nova-ai-panel{right:6px;left:6px;bottom:72px;transform:none;width:auto;height:calc(100vh - 84px);border-radius:16px}}
+
+/* Dynamic Profile & Card Styles */
+.virtual-card {
+  position: relative;
+}
+.delete-card-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: background 0.2s, transform 0.2s;
+  padding: 0;
+}
+.delete-card-btn:hover {
+  background: rgba(239, 83, 80, 0.85);
+  transform: scale(1.1);
+}
+.active-profile {
+  background: rgba(111, 88, 201, 0.15) !important;
+  font-weight: bold;
+}
+body.light .active-profile {
+  background: rgba(111, 88, 201, 0.1) !important;
+}

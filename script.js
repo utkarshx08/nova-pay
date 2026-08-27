@@ -31,11 +31,147 @@ const state = {
   chart: [...BASE_CHART],
   monthlyBudget: 40000,
   savingsGoal: 15000,
-  savingsCurrent: 10200
+  savingsCurrent: 10200,
+  theme: "dark",
+  settings: {
+    notifications: true,
+    weeklySummary: true,
+    biometric: false
+  },
+  cards: [
+    { name: "Primary", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
+    { name: "Virtual", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
+    { name: "Travel", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
+  ],
+  profiles: [],
+  activeProfileId: "utkarsh"
 };
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+
+// Profile sync helpers
+function createProfileFromCurrentState(id, name, avatar) {
+  return {
+    id: id,
+    name: name,
+    avatar: avatar,
+    balance: state.balance,
+    transactions: [...state.transactions],
+    activities: [...state.activities],
+    payments: [...state.payments],
+    monthlyBudget: state.monthlyBudget,
+    savingsGoal: state.savingsGoal,
+    savingsCurrent: state.savingsCurrent,
+    theme: state.theme,
+    settings: { ...state.settings },
+    cards: state.cards ? [...state.cards] : [
+      { name: "Primary", number: "4832", holder: name + " Tyagi", expiry: "08/29" },
+      { name: "Virtual", number: "9011", holder: name + " Tyagi", expiry: "08/29" },
+      { name: "Travel", number: "2744", holder: name + " Tyagi", expiry: "08/29" }
+    ]
+  };
+}
+
+function copyProfileToState(profile) {
+  state.balance = profile.balance;
+  state.transactions = [...profile.transactions];
+  state.activities = [...profile.activities];
+  state.payments = [...profile.payments];
+  state.monthlyBudget = profile.monthlyBudget;
+  state.savingsGoal = profile.savingsGoal;
+  state.savingsCurrent = profile.savingsCurrent;
+  state.theme = profile.theme;
+  state.settings = { ...profile.settings };
+  state.cards = profile.cards ? [...profile.cards] : [];
+}
+
+function saveStateToCurrentProfile() {
+  const current = state.profiles.find(p => p.id === state.activeProfileId);
+  if (current) {
+    current.balance = state.balance;
+    current.transactions = [...state.transactions];
+    current.activities = [...state.activities];
+    current.payments = [...state.payments];
+    current.monthlyBudget = state.monthlyBudget;
+    current.savingsGoal = state.savingsGoal;
+    current.savingsCurrent = state.savingsCurrent;
+    current.theme = state.theme;
+    current.settings = { ...state.settings };
+    current.cards = state.cards ? [...state.cards] : [];
+  }
+}
+
+async function saveStateToServer() {
+  saveStateToCurrentProfile();
+  try {
+    const response = await fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        profiles: state.profiles,
+        activeProfileId: state.activeProfileId
+      })
+    });
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+  } catch (error) {
+    console.warn("Could not save to server, saving to localStorage instead:", error);
+    try {
+      localStorage.setItem("novapayState", JSON.stringify({
+        profiles: state.profiles,
+        activeProfileId: state.activeProfileId
+      }));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
+async function loadStateFromServer() {
+  try {
+    const response = await fetch("/api/state");
+    if (response.ok) {
+      const data = await response.json();
+      state.profiles = data.profiles || [];
+      state.activeProfileId = data.activeProfileId || "utkarsh";
+      
+      if (!state.profiles.length) {
+        state.profiles = [createProfileFromCurrentState("utkarsh", "Utkarsh", "UT")];
+        state.activeProfileId = "utkarsh";
+      }
+      
+      const current = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+      copyProfileToState(current);
+      return;
+    }
+  } catch (error) {
+    console.warn("Could not load from server, checking localStorage:", error);
+  }
+  try {
+    const localData = localStorage.getItem("novapayState");
+    if (localData) {
+      const data = JSON.parse(localData);
+      state.profiles = data.profiles || [];
+      state.activeProfileId = data.activeProfileId || "utkarsh";
+      
+      if (!state.profiles.length) {
+        state.profiles = [createProfileFromCurrentState("utkarsh", "Utkarsh", "UT")];
+        state.activeProfileId = "utkarsh";
+      }
+      
+      const current = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+      copyProfileToState(current);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function applyThemeUI() {
+  const isLight = state.theme === "light";
+  document.body.classList.toggle("light", isLight);
+  $("#themeBtn").textContent = isLight ? "☀" : "☾";
+}
 
 function money(n){ return `${n < 0 ? "-" : "+"}$${Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
 function amountOnly(n){ return `$${Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
@@ -178,8 +314,36 @@ function renderFullSection(section){
     renderAllTransactions(state.transactions);
     $("#newTransferBtn").onclick=()=>openMoneyModal("transfer");
   } else if(section==="cards"){
-    el.innerHTML=`<div class="panel"><div class="panel-head"><div><p class="eyebrow">Your wallet</p><h2>Cards</h2></div><button class="primary" style="margin:0;padding:8px 14px" id="newCardBtn">＋ New card</button></div><div class="cards-showcase" style="margin-top:20px">${["Primary •••• 4832","Virtual •••• 9011","Travel •••• 2744"].map((x,i)=>`<div class="virtual-card"><span>NOVAPAY</span><strong>${x}</strong><small>UTKARSH TYAGI &nbsp; 08/29</small></div>`).join("")}</div></div>`;
-    $("#newCardBtn").onclick=()=>{showToast("Card request submitted");};
+    const cardsHtml = state.cards.map((card, i) => `
+      <div class="virtual-card">
+        <span>NOVAPAY</span>
+        <strong>${card.name} •••• ${card.number}</strong>
+        <small>${card.holder.toUpperCase()} &nbsp; ${card.expiry}</small>
+        <button class="delete-card-btn" data-index="${i}" title="Remove Card">×</button>
+      </div>
+    `).join("");
+
+    el.innerHTML = `
+      <div class="panel">
+        <div class="panel-head">
+          <div><p class="eyebrow">Your wallet</p><h2>Cards</h2></div>
+          <button class="primary" style="margin:0;padding:8px 14px" id="newCardBtn">＋ New card</button>
+        </div>
+        <div class="cards-showcase" style="margin-top:20px">
+          ${cardsHtml || '<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:40px 0;">No active cards. Request one above.</p>'}
+        </div>
+      </div>
+    `;
+
+    $("#newCardBtn").onclick = () => openNewCardModal();
+
+    $$(".delete-card-btn").forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const index = Number(btn.dataset.index);
+        removeCard(index);
+      };
+    });
   } else if(section==="payments"){
     el.innerHTML=`<div class="panel"><div class="panel-head"><div><p class="eyebrow">Scheduled</p><h2>Upcoming payments</h2></div><button class="primary" style="margin:0;padding:8px 14px" id="sectionAddPayment">＋ Add payment</button></div><div id="fullPayments" style="margin-top:12px"></div></div>`;
     $("#fullPayments").innerHTML=state.payments.map(p=>`<div class="setting-row"><div><b>${p[0]}</b><small>Due ${p[1]} · Automatic payment</small></div><strong>${p[2]}</strong></div>`).join("");
@@ -187,8 +351,26 @@ function renderFullSection(section){
   } else if(section==="analytics"){
     el.innerHTML=`<div class="panel"><p class="eyebrow">Insights</p><h2>Analytics</h2><div class="stats-grid" style="margin-top:20px"><div class="mini-card"><span>Income</span><strong>$8,920</strong><small>+14.2% vs last month</small></div><div class="mini-card"><span>Expenses</span><strong>$3,842</strong><small>+4.7% vs last month</small></div><div class="mini-card"><span>Savings</span><strong>$5,078</strong><small>57% savings rate</small></div></div></div>`;
   } else if(section==="settings"){
-    el.innerHTML=`<div class="panel"><p class="eyebrow">Preferences</p><h2>Settings</h2><div class="setting-row"><div><b>Transaction notifications</b><small>Get alerts when money moves</small></div><button class="toggle on"><span></span></button></div><div class="setting-row"><div><b>Weekly spending summary</b><small>Receive a weekly overview</small></div><button class="toggle on"><span></span></button></div><div class="setting-row"><div><b>Biometric login</b><small>Use device authentication</small></div><button class="toggle"><span></span></button></div></div>`;
-    $$(".toggle").forEach(t=>t.onclick=()=>t.classList.toggle("on"));
+    el.innerHTML=`<div class="panel"><p class="eyebrow">Preferences</p><h2>Settings</h2>
+      <div class="setting-row"><div><b>Transaction notifications</b><small>Get alerts when money moves</small></div><button class="toggle ${state.settings?.notifications ? 'on' : ''}" id="toggleNotifications"><span></span></button></div>
+      <div class="setting-row"><div><b>Weekly spending summary</b><small>Receive a weekly overview</small></div><button class="toggle ${state.settings?.weeklySummary ? 'on' : ''}" id="toggleWeeklySummary"><span></span></button></div>
+      <div class="setting-row"><div><b>Biometric login</b><small>Use device authentication</small></div><button class="toggle ${state.settings?.biometric ? 'on' : ''}" id="toggleBiometric"><span></span></button></div></div>`;
+    
+    $("#toggleNotifications").onclick=()=>{
+      $("#toggleNotifications").classList.toggle("on");
+      state.settings.notifications = $("#toggleNotifications").classList.contains("on");
+      saveStateToServer();
+    };
+    $("#toggleWeeklySummary").onclick=()=>{
+      $("#toggleWeeklySummary").classList.toggle("on");
+      state.settings.weeklySummary = $("#toggleWeeklySummary").classList.contains("on");
+      saveStateToServer();
+    };
+    $("#toggleBiometric").onclick=()=>{
+      $("#toggleBiometric").classList.toggle("on");
+      state.settings.biometric = $("#toggleBiometric").classList.contains("on");
+      saveStateToServer();
+    };
   }
 }
 
@@ -219,6 +401,7 @@ function confirmMoney(type){
   if(type==="payment"){state.payments.unshift([name||"New payment","Sep 12",`$${amount.toFixed(2)}`]);renderPayments();showToast("Payment scheduled");}
   applyDashboardFilters();
   emitFinanceUpdate();
+  saveStateToServer();
   $("#modalBackdrop").classList.remove("open");
 }
 
@@ -232,7 +415,13 @@ $("#modalBackdrop").onclick=e=>{if(e.target===e.currentTarget)e.currentTarget.cl
 document.addEventListener("keydown", e=>{
   if(e.key === "Escape") $("#modalBackdrop").classList.remove("open");
 });
-$("#themeBtn").onclick=()=>{document.body.classList.toggle("light");showToast("Theme toggled");};
+$("#themeBtn").onclick=()=>{
+  const isLight = document.body.classList.toggle("light");
+  state.theme = isLight ? "light" : "dark";
+  $("#themeBtn").textContent = isLight ? "☀" : "☾";
+  saveStateToServer();
+  showToast("Theme toggled");
+};
 $("#notifyBtn").onclick=(e)=> {
   e.stopPropagation();
   const dropdown = $("#notifyDropdown");
@@ -292,6 +481,7 @@ $("#chartRange").onchange=e=>{
   showToast(`${value} selected`);
   renderBars();
   emitFinanceUpdate();
+  saveStateToServer();
 };
 
 document.addEventListener("click", e=>{
@@ -305,7 +495,237 @@ document.addEventListener("click", e=>{
   $("#closeDetailsBtn").onclick = ()=>$("#modalBackdrop").classList.remove("open");
 });
 
-renderBars();renderActivities();renderHistory();renderPayments();updateBalanceUI();emitFinanceUpdate();
+// Profile and Card management helpers
+function updateProfileUI() {
+  const current = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+  if (!current) return;
+
+  const profileBtn = $("#profileBtn");
+  if (profileBtn) {
+    profileBtn.innerHTML = `<span class="avatar small">${current.avatar}</span><span>${current.name}</span><b>⌄</b>`;
+  }
+  
+  const miniUser = $(".mini-user");
+  if (miniUser) {
+    miniUser.innerHTML = `
+      <div class="avatar">${current.avatar}</div>
+      <div><strong>${current.name}</strong><small>Personal account</small></div>
+      <button id="logoutBtn" aria-label="Log out">↗</button>
+    `;
+    const newLogoutBtn = $("#logoutBtn");
+    if (newLogoutBtn) {
+      newLogoutBtn.onclick = () => showToast("Demo logout — session kept for preview");
+    }
+  }
+}
+
+function renderProfileDropdown() {
+  const dropdown = $("#profileDropdown");
+  if (!dropdown) return;
+  
+  const profilesHtml = state.profiles.map(p => {
+    const isActive = p.id === state.activeProfileId;
+    return `
+      <button class="dropdown-item profile-select-btn ${isActive ? 'active-profile' : ''}" data-id="${p.id}">
+        <span class="avatar small" style="display:inline-grid;margin-right:8px;vertical-align:middle;width:24px;height:24px;font-size:8px;">${p.avatar}</span>
+        <span style="vertical-align:middle;">${p.name} ${isActive ? '✓' : ''}</span>
+      </button>
+    `;
+  }).join("");
+
+  dropdown.innerHTML = `
+    <div style="padding:4px 12px;font-size:10px;font-weight:bold;color:var(--muted)">PROFILES</div>
+    ${profilesHtml}
+    <hr>
+    <button class="dropdown-item" id="addProfileBtn" style="color:var(--primary-color, #6d6bff);font-weight:bold;">＋ Add new profile</button>
+    <hr>
+    <button class="dropdown-item">Preferences</button>
+    <button class="dropdown-item text-red" id="dropdownLogout">Log out</button>
+  `;
+
+  $$(".profile-select-btn").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      switchProfile(id);
+    };
+  });
+
+  $("#addProfileBtn").onclick = () => {
+    openAddProfileModal();
+  };
+
+  if($("#dropdownLogout")) $("#dropdownLogout").onclick=()=>showToast("Logged out successfully");
+}
+
+function switchProfile(id) {
+  if (id === state.activeProfileId) return;
+  saveStateToCurrentProfile();
+  const next = state.profiles.find(p => p.id === id);
+  if (next) {
+    state.activeProfileId = id;
+    copyProfileToState(next);
+    
+    applyThemeUI();
+    updateBalanceUI();
+    renderBars();
+    renderActivities();
+    renderHistory();
+    renderPayments();
+    
+    const activeNav = $(".nav-item.active");
+    if (activeNav) {
+      const section = activeNav.dataset.section;
+      if (section !== "dashboard") {
+        renderFullSection(section);
+      }
+    }
+    
+    updateProfileUI();
+    renderProfileDropdown();
+    emitFinanceUpdate();
+    saveStateToServer();
+    showToast(`Switched to profile: ${next.name}`);
+  }
+}
+
+function openAddProfileModal() {
+  $("#modalContent").innerHTML = `
+    <h2>Add new profile</h2>
+    <p>Create a new profile with its own balance, transactions, and settings.</p>
+    <div class="form">
+      <label>Profile Name
+        <input id="newProfileName" type="text" placeholder="e.g. John Doe" maxlength="20" required autofocus>
+      </label>
+      <label>Avatar Initials
+        <input id="newProfileAvatar" type="text" placeholder="e.g. JD" maxlength="2" required>
+      </label>
+      <button class="primary" id="confirmNewProfile">Create Profile</button>
+    </div>
+  `;
+  $("#modalBackdrop").classList.add("open");
+  
+  $("#confirmNewProfile").onclick = () => createNewProfile();
+  
+  $("#newProfileName").addEventListener("keydown", e => { if (e.key === "Enter") $("#newProfileAvatar").focus(); });
+  $("#newProfileAvatar").addEventListener("keydown", e => { if (e.key === "Enter") createNewProfile(); });
+}
+
+function createNewProfile() {
+  const name = $("#newProfileName").value.trim();
+  const avatar = $("#newProfileAvatar").value.trim().toUpperCase();
+  
+  if (!name) {
+    showToast("Please enter a name");
+    return;
+  }
+  if (!avatar || avatar.length > 2) {
+    showToast("Please enter 1 or 2 initials for the avatar");
+    return;
+  }
+  
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
+  
+  const newProfile = {
+    id: id,
+    name: name,
+    avatar: avatar,
+    balance: 5000,
+    transactions: [
+      { merchant: "Salary", date: todayLabel(), amount: 5000, status: "Completed", icon: "↗" }
+    ],
+    activities: [
+      ["Salary", "Welcome bonus", 5000, "↗"]
+    ],
+    payments: [],
+    monthlyBudget: 20000,
+    savingsGoal: 5000,
+    savingsCurrent: 0,
+    theme: "dark",
+    settings: {
+      notifications: true,
+      weeklySummary: true,
+      biometric: false
+    },
+    cards: [
+      { name: "Primary", number: Math.floor(1000 + Math.random() * 9000).toString(), holder: name, expiry: "12/29" }
+    ]
+  };
+  
+  state.profiles.push(newProfile);
+  saveStateToServer();
+  switchProfile(id);
+  
+  $("#modalBackdrop").classList.remove("open");
+  showToast(`Profile "${name}" created`);
+}
+
+function openNewCardModal() {
+  const current = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+  $("#modalContent").innerHTML = `
+    <h2>Request a new card</h2>
+    <p>Add a new virtual or physical card to your wallet.</p>
+    <div class="form">
+      <label>Card Name / Type
+        <select id="newCardName">
+          <option value="Primary">Primary Visa</option>
+          <option value="Virtual">Virtual Card</option>
+          <option value="Travel">Travel Card</option>
+          <option value="Business">Business Card</option>
+        </select>
+      </label>
+      <label>Cardholder Name
+        <input id="newCardHolder" type="text" value="${current.name}" required>
+      </label>
+      <button class="primary" id="confirmNewCard">Create Card</button>
+    </div>
+  `;
+  $("#modalBackdrop").classList.add("open");
+  
+  $("#confirmNewCard").onclick = () => createNewCard();
+}
+
+function createNewCard() {
+  const name = $("#newCardName").value;
+  const holder = $("#newCardHolder").value.trim();
+  
+  if (!holder) {
+    showToast("Please enter cardholder name");
+    return;
+  }
+  
+  const number = Math.floor(1000 + Math.random() * 9000).toString();
+  const expiry = "09/31";
+  
+  state.cards.push({ name, number, holder, expiry });
+  saveStateToServer();
+  renderFullSection("cards");
+  $("#modalBackdrop").classList.remove("open");
+  showToast(`${name} Card created!`);
+}
+
+function removeCard(index) {
+  const confirmed = confirm("Are you sure you want to remove this card?");
+  if (!confirmed) return;
+  
+  const removed = state.cards.splice(index, 1)[0];
+  saveStateToServer();
+  renderFullSection("cards");
+  showToast(`${removed.name} Card removed`);
+}
+
+async function initApp() {
+  await loadStateFromServer();
+  applyThemeUI();
+  updateProfileUI();
+  renderProfileDropdown();
+  renderBars();
+  renderActivities();
+  renderHistory();
+  renderPayments();
+  updateBalanceUI();
+  emitFinanceUpdate();
+}
+initApp();
 
 const light = document.createElement("style");
 light.textContent=`body.light{--bg:#f4f5fa;--panel:#fff;--panel2:#f8f8fc;--text:#171827;--muted:#707489;background:#eef0f8}body.light .sidebar,body.light .topbar{background:#fff}body.light .panel,body.light .transfer-card,body.light .mini-card{background:#fff}body.light .search,body.light .round-btn,body.light .profile,body.light .nav-item:hover,body.light .nav-item.active,body.light .quick-actions button,body.light .panel-head select{background:#f4f4f9;color:#333}body.light .search input{color:#222}`;

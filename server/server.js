@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const dotenv = require("dotenv");
+const fs = require("fs").promises;
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
@@ -8,12 +9,96 @@ const app = express();
 const ROOT_DIR = path.join(__dirname, "..");
 const PORT = Number(process.env.PORT || 3000);
 
+const STATE_FILE = path.join(__dirname, "data.json");
+
+const DEFAULT_STATE = {
+  profiles: [
+    {
+      id: "utkarsh",
+      name: "Utkarsh",
+      avatar: "UT",
+      balance: 12480,
+      transactions: [
+        {merchant:"Car Insurance", date:"Aug 22, 2026", amount:-320, status:"Completed", icon:"◆"},
+        {merchant:"Salary", date:"Aug 20, 2026", amount:4500, status:"Completed", icon:"↗"},
+        {merchant:"Online Payment", date:"Aug 18, 2026", amount:-154, status:"Completed", icon:"◉"},
+        {merchant:"Electric Bill", date:"Aug 15, 2026", amount:-88, status:"Completed", icon:"ϟ"},
+        {merchant:"Grocery Store", date:"Aug 12, 2026", amount:-126, status:"Completed", icon:"✦"},
+        {merchant:"Freelance Income", date:"Aug 08, 2026", amount:980, status:"Completed", icon:"↗"}
+      ],
+      activities: [
+        ["Water Bill","Successfully paid",-120,"⌁"],
+        ["Salary","Received",4500,"↗"],
+        ["Electric Bill","Successfully paid",-88,"ϟ"],
+        ["Internet Bill","Successfully paid",-62,"◌"],
+        ["Grocery Store","Card payment",-126,"✦"]
+      ],
+      payments: [
+        ["Home Rent","Aug 30","$1,500"],
+        ["Car Insurance","Sep 02","$320"],
+        ["Streaming","Sep 05","$18"],
+        ["Internet","Sep 08","$62"]
+      ],
+      monthlyBudget: 40000,
+      savingsGoal: 15000,
+      savingsCurrent: 10200,
+      theme: "dark",
+      settings: {
+        notifications: true,
+        weeklySummary: true,
+        biometric: false
+      },
+      cards: [
+        { name: "Primary", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
+        { name: "Virtual", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
+        { name: "Travel", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
+      ]
+    }
+  ],
+  activeProfileId: "utkarsh"
+};
+
+async function getSavedState() {
+  try {
+    const data = await fs.readFile(STATE_FILE, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      await fs.writeFile(STATE_FILE, JSON.stringify(DEFAULT_STATE, null, 2), "utf8");
+      return DEFAULT_STATE;
+    }
+    throw err;
+  }
+}
+
 const AI_API_KEY = process.env.AI_API_KEY || "";
 const AI_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
 const AI_API_URL = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(ROOT_DIR));
+
+// State API Endpoints
+app.get("/api/state", async (req, res) => {
+  try {
+    const state = await getSavedState();
+    res.json(state);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to read state data", details: error.message });
+  }
+});
+
+app.post("/api/state", async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== "object") {
+      return res.status(400).json({ error: "Invalid state object" });
+    }
+    await fs.writeFile(STATE_FILE, JSON.stringify(req.body, null, 2), "utf8");
+    res.json({ success: true, state: req.body });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to write state data", details: error.message });
+  }
+});
 
 function buildSystemPrompt(context) {
   return [

@@ -1,0 +1,179 @@
+{
+  "profiles": [
+    {
+      "id": "utkarsh",
+      "name": "Utkarsh",
+      "avatar": "UT",
+      "balance": 12480,
+      "transactions": [
+        {
+          "merchant": "Car Insurance",
+          "date": "Aug 22, 2026",
+          "amount": -320,
+          "status": "Completed",
+          "icon": "◆"
+        },
+        {
+          "merchant": "Salary",
+          "date": "Aug 20, 2026",
+          "amount": 4500,
+          "status": "Completed",
+          "icon": "↗"
+        },
+        {
+          "merchant": "Online Payment",
+          "date": "Aug 18, 2026",
+          "amount": -154,
+          "status": "Completed",
+          "icon": "◉"
+        },
+        {
+          "merchant": "Electric Bill",
+          "date": "Aug 15, 2026",
+          "amount": -88,
+          "status": "Completed",
+          "icon": "ϟ"
+        },
+        {
+          "merchant": "Grocery Store",
+          "date": "Aug 12, 2026",
+          "amount": -126,
+          "status": "Completed",
+          "icon": "✦"
+        },
+        {
+          "merchant": "Freelance Income",
+          "date": "Aug 08, 2026",
+          "amount": 980,
+          "status": "Completed",
+          "icon": "↗"
+        }
+      ],
+      "activities": [
+        [
+          "Water Bill",
+          "Successfully paid",
+          -120,
+          "⌁"
+        ],
+        [
+          "Salary",
+          "Received",
+          4500,
+          "↗"
+        ],
+        [
+          "Electric Bill",
+          "Successfully paid",
+          -88,
+          "ϟ"
+        ],
+        [
+          "Internet Bill",
+          "Successfully paid",
+          -62,
+          "◌"
+        ],
+        [
+          "Grocery Store",
+          "Card payment",
+          -126,
+          "✦"
+        ]
+      ],
+      "payments": [
+        [
+          "Home Rent",
+          "Aug 30",
+          "$1,500"
+        ],
+        [
+          "Car Insurance",
+          "Sep 02",
+          "$320"
+        ],
+        [
+          "Streaming",
+          "Sep 05",
+          "$18"
+        ],
+        [
+          "Internet",
+          "Sep 08",
+          "$62"
+        ]
+      ],
+      "monthlyBudget": 40000,
+      "savingsGoal": 15000,
+      "savingsCurrent": 10200,
+      "theme": "dark",
+      "settings": {
+        "notifications": true,
+        "weeklySummary": true,
+        "biometric": false
+      },
+      "cards": [
+        {
+          "name": "Primary",
+          "number": "4832",
+          "holder": "Utkarsh Tyagi",
+          "expiry": "08/29"
+        },
+        {
+          "name": "Virtual",
+          "number": "9011",
+          "holder": "Utkarsh Tyagi",
+          "expiry": "08/29"
+        },
+        {
+          "name": "Travel",
+          "number": "2744",
+          "holder": "Utkarsh Tyagi",
+          "expiry": "08/29"
+        }
+      ]
+    },
+    {
+      "id": "john-doe-1305",
+      "name": "John Doe",
+      "avatar": "JD",
+      "balance": 5000,
+      "transactions": [
+        {
+          "merchant": "Salary",
+          "date": "Aug 24, 2026",
+          "amount": 5000,
+          "status": "Completed",
+          "icon": "↗"
+        }
+      ],
+      "activities": [
+        [
+          "Salary",
+          "Welcome bonus",
+          5000,
+          "↗"
+        ]
+      ],
+      "payments": [],
+      "monthlyBudget": 20000,
+      "savingsGoal": 5000,
+      "savingsCurrent": 0,
+      "theme": "dark",
+      "settings": {
+        "notifications": true,
+        "weeklySummary": true,
+        "biometric": false
+      },
+      "cards": [
+        {
+          "name": "Primary",
+          "number": "7960",
+          "holder": "John Doe",
+          "expiry": "12/29"
+        }
+      ]
+    }
+  ],
+  "activeProfileId": "utkarsh"
+}

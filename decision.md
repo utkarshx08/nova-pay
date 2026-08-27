@@ -226,9 +226,39 @@ Implementation:
 - AI_API_URL=https://api.openai.com/v1/chat/completions
 - PORT=3000
 
+## Decision 17: Dynamic Local State Persistence
+Decision:
+- Save and load financial data and app settings to/from a local JSON file (`server/data.json`) when running on localhost.
+- Ensure the app falls back gracefully to localStorage or defaults when loaded statically (via `file:///`).
+
+Reason:
+- To make the dashboard dynamic rather than static, allowing updates like transfers, top-ups, theme changes, and settings preferences to persist across page reloads.
+
+Implementation:
+- Created Express endpoints `GET /api/state` and `POST /api/state` in `server/server.js` to read and write `server/data.json`.
+- Integrated asynchronous startup `loadStateFromServer()` and save hooks `saveStateToServer()` in `script.js`.
+- Included settings values (notifications, weekly summary, biometric) and theme preferences directly in the state object.
+
+## Decision 18: Multi-Profile Support & Card Management
+Decision:
+- Refactor the data structure to store profiles under a `profiles` array with an `activeProfileId` tracker.
+- Dynamically render cards from state and support adding and removing cards.
+
+Reason:
+- To allow users to create and switch between multiple independent profiles, each maintaining separate balances, transactions, settings, and card details.
+- To make virtual/physical cards fully dynamic (rather than hardcoded).
+
+Implementation:
+- Updated backend `DEFAULT_STATE` and client `state` to include `profiles` array.
+- Added client-side sync helpers (`createProfileFromCurrentState`, `copyProfileToState`, `saveStateToCurrentProfile`) to bridge flat variables (read by dashboard script) with nested profile data.
+- Built interactive profile dropdown with profile selection and "＋ Add new profile" button.
+- Added custom card addition modal and card deletion button with custom hover states in `styles.css`.
+
 ## Final Summary
-All major decisions for Nova AI were made to satisfy four constraints:
+All major decisions for Nova AI were made to satisfy six constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
 - keep architecture modular and maintainable
+- enable dynamic local persistence of dashboard state and configurations
+- support multi-profile state mapping and dynamic wallet management
