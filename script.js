@@ -165,6 +165,13 @@ async function loadStateFromServer() {
   } catch (e) {
     console.error(e);
   }
+
+  if (!state.profiles || !state.profiles.length) {
+    state.profiles = [createProfileFromCurrentState("utkarsh", "Utkarsh", "UT")];
+    state.activeProfileId = "utkarsh";
+    const current = state.profiles[0];
+    copyProfileToState(current);
+  }
 }
 
 function applyThemeUI() {
@@ -177,6 +184,26 @@ function money(n){ return `${n < 0 ? "-" : "+"}$${Math.abs(n).toLocaleString(und
 function amountOnly(n){ return `$${Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
 function updateBalanceUI(){
   $("#balance").textContent = amountOnly(state.balance);
+  
+  // Dynamic monthly spending mini-card
+  const spent = Math.abs(state.transactions.filter(t=>t.amount<0).reduce((sum,t)=>sum+t.amount,0));
+  const budget = state.monthlyBudget || 0;
+  const pct = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+  
+  const spendingAmount = $("#spendingAmount");
+  if (spendingAmount) spendingAmount.textContent = amountOnly(spent);
+  
+  const spendingProgress = $("#spendingProgress");
+  if (spendingProgress) spendingProgress.style.width = pct + "%";
+  
+  const spendingLimit = $("#spendingLimit");
+  if (spendingLimit) spendingLimit.textContent = `${amountOnly(budget)} monthly limit`;
+
+  const spendingTrend = $("#spendingTrend");
+  if (spendingTrend) {
+    spendingTrend.textContent = budget > 0 ? `${pct}% of limit` : "No limit set";
+    spendingTrend.className = `trend ${pct > 100 ? 'text-red' : 'positive'}`;
+  }
 }
 function todayLabel(){
   return new Date().toLocaleDateString(undefined, { month: "short", day: "2-digit", year: "numeric" });
@@ -354,7 +381,19 @@ function renderFullSection(section){
     el.innerHTML=`<div class="panel"><p class="eyebrow">Preferences</p><h2>Settings</h2>
       <div class="setting-row"><div><b>Transaction notifications</b><small>Get alerts when money moves</small></div><button class="toggle ${state.settings?.notifications ? 'on' : ''}" id="toggleNotifications"><span></span></button></div>
       <div class="setting-row"><div><b>Weekly spending summary</b><small>Receive a weekly overview</small></div><button class="toggle ${state.settings?.weeklySummary ? 'on' : ''}" id="toggleWeeklySummary"><span></span></button></div>
-      <div class="setting-row"><div><b>Biometric login</b><small>Use device authentication</small></div><button class="toggle ${state.settings?.biometric ? 'on' : ''}" id="toggleBiometric"><span></span></button></div></div>`;
+      <div class="setting-row"><div><b>Biometric login</b><small>Use device authentication</small></div><button class="toggle ${state.settings?.biometric ? 'on' : ''}" id="toggleBiometric"><span></span></button></div>
+      
+      <hr style="border:0;border-top:1px solid var(--line);margin:24px 0;">
+      <p class="eyebrow">Profile Management</p><h2>Switch & Manage Profiles</h2>
+      <div id="settingsProfileList" style="margin-top:15px;display:grid;gap:12px;"></div>
+      <button class="primary" style="margin-top:15px;max-width:200px" id="settingsAddProfileBtn">＋ Add new profile</button>
+    </div>`;
+
+    renderSettingsProfileList();
+
+    $("#settingsAddProfileBtn").onclick = () => {
+      openAddProfileModal();
+    };
     
     $("#toggleNotifications").onclick=()=>{
       $("#toggleNotifications").classList.toggle("on");
@@ -557,6 +596,67 @@ function renderProfileDropdown() {
   if($("#dropdownLogout")) $("#dropdownLogout").onclick=()=>showToast("Logged out successfully");
 }
 
+function renderSettingsProfileList() {
+  const container = $("#settingsProfileList");
+  if (!container) return;
+
+  container.innerHTML = state.profiles.map(p => {
+    const isActive = p.id === state.activeProfileId;
+    const canDelete = !isActive && state.profiles.length > 1;
+    
+    return `
+      <div class="setting-row" style="padding:10px 0;border-bottom:1px solid var(--line);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="avatar" style="width:36px;height:36px;font-size:11px;">${p.avatar}</div>
+          <div>
+            <b style="font-size:12px;">${p.name}</b>
+            <small style="display:block;color:var(--muted);font-size:9px;">${isActive ? 'Active profile' : 'Inactive profile'}</small>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          ${isActive 
+            ? `<span style="font-size:10px;color:var(--green);font-weight:bold;padding:6px 12px;background:rgba(87,220,168,0.1);border-radius:20px;">Active</span>` 
+            : `<button class="primary settings-switch-profile-btn" data-id="${p.id}" style="margin:0;padding:6px 12px;font-size:10px;background:var(--panel2);border:1px solid var(--line);color:var(--text);">Switch</button>`
+          }
+          ${canDelete
+            ? `<button class="primary settings-delete-profile-btn text-red" data-id="${p.id}" style="margin:0;padding:6px 12px;font-size:10px;background:rgba(255,110,138,0.1);border:1px solid rgba(255,110,138,0.2);color:var(--red);">Delete</button>`
+            : ''
+          }
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  $$(".settings-switch-profile-btn").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      switchProfile(id);
+      renderSettingsProfileList();
+    };
+  });
+
+  $$(".settings-delete-profile-btn").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      deleteProfile(id);
+    };
+  });
+}
+
+function deleteProfile(id) {
+  const target = state.profiles.find(p => p.id === id);
+  if (!target) return;
+
+  const confirmed = confirm(`Are you sure you want to delete the profile "${target.name}"? This will permanently delete all its data, including transactions and cards.`);
+  if (!confirmed) return;
+
+  state.profiles = state.profiles.filter(p => p.id !== id);
+  saveStateToServer();
+  renderSettingsProfileList();
+  renderProfileDropdown();
+  showToast(`Profile "${target.name}" deleted`);
+}
+
 function switchProfile(id) {
   if (id === state.activeProfileId) return;
   saveStateToCurrentProfile();
@@ -629,16 +729,12 @@ function createNewProfile() {
     id: id,
     name: name,
     avatar: avatar,
-    balance: 5000,
-    transactions: [
-      { merchant: "Salary", date: todayLabel(), amount: 5000, status: "Completed", icon: "↗" }
-    ],
-    activities: [
-      ["Salary", "Welcome bonus", 5000, "↗"]
-    ],
+    balance: 0,
+    transactions: [],
+    activities: [],
     payments: [],
-    monthlyBudget: 20000,
-    savingsGoal: 5000,
+    monthlyBudget: 0,
+    savingsGoal: 0,
     savingsCurrent: 0,
     theme: "dark",
     settings: {
@@ -646,9 +742,7 @@ function createNewProfile() {
       weeklySummary: true,
       biometric: false
     },
-    cards: [
-      { name: "Primary", number: Math.floor(1000 + Math.random() * 9000).toString(), holder: name, expiry: "12/29" }
-    ]
+    cards: []
   };
   
   state.profiles.push(newProfile);

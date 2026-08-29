@@ -254,11 +254,89 @@ Implementation:
 - Built interactive profile dropdown with profile selection and "＋ Add new profile" button.
 - Added custom card addition modal and card deletion button with custom hover states in `styles.css`.
 
+## Decision 19: Offline Warning Status Banner
+Decision:
+- Create a persistent alert banner at the top of the chat panel instead of prefixing repetitive fallback warnings to message bubbles.
+
+Reason:
+- To prevent spamming and cluttering the chat history with the same warning, keeping the conversations clean and readable while still informing the user of the offline status.
+
+Implementation:
+- Added `#novaAIBanner` markup inside `#novaAIPanel` in `index.html`.
+- Updated `.nova-ai-panel` layout in `styles.css` from `grid` to `flex` to dynamically support the banner height without breaking CSS Grid tracks.
+
+## Decision 20: Smarter Local Intent Matcher & Financial Advice
+Decision:
+- Upgrade the local financial analyzer (`localAnswer` in `financial-analysis.js`) to parse synonym phrases, handle specific categories (Food, Bills, Transport, Shopping, Income), and provide custom budget suggestions.
+
+Reason:
+- To make the local fallback mode feel highly intelligent, flexible, and context-aware.
+
+Implementation:
+- Rewrote `localAnswer` in `ai/financial-analysis.js` to match synonyms and sum up category expenses dynamically, attaching `💡 Suggestion:` recommendations tailored to the query.
+
+## Decision 21: Dynamic Context-Specific Suggestion Chips
+Decision:
+- Replace static quick question suggestions at the bottom of the chat panel with dynamic follow-up suggestions returned by the analysis logic.
+
+Reason:
+- To keep the user in a natural conversation flow by offering suggestions that directly relate to their previous question.
+
+Implementation:
+- Updated `localAnswer` to return custom suggestions arrays.
+- Modified `renderQuickQuestions` and `sendQuestion` in `ai/nova-ai.js` to dynamically swap out the suggestion chips.
+- Stripped old warning prefixes from `localStorage` history on load to maintain clean chat threads.
+
+## Decision 22: Profile Management in Settings Screen & Offline Initialization Fallback
+Decision:
+- Add a dedicated "Profile Management" section inside the Settings tab, listing all profiles with active status indicators, a "Switch" button for inactive profiles, and a "+ Add new profile" button.
+- Guarantee that `loadStateFromServer()` initializes at least one default profile if both loading attempts (server and localStorage) fail/are empty on startup.
+
+Reason:
+- To make managing and switching between profiles highly visible, accessible, and user-friendly (complementing the profile button in the topbar).
+- To prevent uninitialized broken UI states when loading the app statically (via `file:///index.html`) or fresh off a clean database.
+
+Implementation:
+- Added dynamic HTML template rendering in `script.js` under `renderFullSection("settings")` with `#settingsProfileList` container.
+- Implemented `renderSettingsProfileList()` to dynamically query `state.profiles` and attach click handlers.
+- Added fallback check `if (!state.profiles || !state.profiles.length) { ... }` at the end of `loadStateFromServer()`.
+
+## Decision 23: Zero-State Profile Initialization & Dynamic Mini-Cards
+Decision:
+- Configure newly created profiles to start completely fresh with zero values (balance = 0, empty transactions/activities/payments/cards, budget = 0, savingsGoal = 0).
+- Enable dynamic rendering of the "Monthly spending" mini-card on the dashboard based on the active profile's transactions and budget limit (previously hardcoded in HTML).
+
+Reason:
+- To ensure that any secondary profiles start from absolute zero rather than inheriting pre-populated seed data, providing an authentic fresh onboarding experience.
+- To make the dashboard fully reactive to profile changes, updating the monthly spending metric dynamically rather than showing static dummy values.
+
+Implementation:
+- Modified `createNewProfile()` in `script.js` to set balance, budget, savingsGoal, transactions, activities, payments, and cards to 0 or empty arrays.
+- Added IDs to `index.html` elements inside `.mini-card` (`#spendingTrend`, `#spendingAmount`, `#spendingProgress`, `#spendingLimit`).
+- Updated `updateBalanceUI()` in `script.js` to calculate spent total, compare against the monthly limit, and dynamically update the mini-card text and progress bars.
+
+## Decision 24: Profile Deletion Functionality
+Decision:
+- Add a "Delete" button inside the Settings tab for all inactive profiles (when there is more than 1 profile in the workspace).
+
+Reason:
+- To allow users to delete profiles that they no longer need, freeing up storage and keeping their profile switch list clean and uncluttered.
+
+Implementation:
+- Added a `.settings-delete-profile-btn` element to `renderSettingsProfileList()`.
+- Added the `deleteProfile(id)` handler in `script.js` which prompts the user for confirmation and removes the profile from `state.profiles` list, saving changes to the local server or localStorage.
+
 ## Final Summary
-All major decisions for Nova AI were made to satisfy six constraints:
+All major decisions for Nova AI were made to satisfy twelve constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
 - keep architecture modular and maintainable
 - enable dynamic local persistence of dashboard state and configurations
 - support multi-profile state mapping and dynamic wallet management
+- keep conversation bubbles clean of repetitive offline warning banners
+- deliver smarter and more flexible offline financial intent matching
+- provide dynamic, context-specific follow-up recommendation chips
+- offer prominent profile creation and switching options in Settings, with offline fallbacks
+- enforce empty/zero-state defaults for new profiles to ensure a realistic fresh onboarding experience
+- provide safe profile deletion controls in Settings for all inactive profiles

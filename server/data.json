@@ -4,7 +4,7 @@
       "id": "utkarsh",
       "name": "Utkarsh",
       "avatar": "UT",
-      "balance": 12480,
+      "balance": 13000,
       "transactions": [
         {
           "merchant": "Car Insurance",
@@ -83,6 +83,11 @@
       ],
       "payments": [
         [
+          "spotify",
+          "Sep 12",
+          "$9.00"
+        ],
+        [
           "Home Rent",
           "Aug 30",
           "$1,500"
@@ -134,14 +139,21 @@
       ]
     },
     {
-      "id": "john-doe-1305",
-      "name": "John Doe",
-      "avatar": "JD",
-      "balance": 5000,
+      "id": "settings-user-1087",
+      "name": "Settings User",
+      "avatar": "SU",
+      "balance": 4846,
       "transactions": [
         {
+          "merchant": "spotify",
+          "date": "Aug 28, 2026",
+          "amount": -154,
+          "status": "Completed",
+          "icon": "↗"
+        },
+        {
           "merchant": "Salary",
-          "date": "Aug 24, 2026",
+          "date": "Aug 27, 2026",
           "amount": 5000,
           "status": "Completed",
           "icon": "↗"
@@ -155,7 +167,18 @@
           "↗"
         ]
       ],
-      "payments": [],
+      "payments": [
+        [
+          "spotify",
+          "Sep 12",
+          "$5201.00"
+        ],
+        [
+          "spotify",
+          "Sep 12",
+          "$10.00"
+        ]
+      ],
       "monthlyBudget": 20000,
       "savingsGoal": 5000,
       "savingsCurrent": 0,
@@ -163,17 +186,17 @@
       "settings": {
         "notifications": true,
         "weeklySummary": true,
-        "biometric": false
+        "biometric": true
       },
       "cards": [
         {
           "name": "Primary",
-          "number": "7960",
-          "holder": "John Doe",
+          "number": "1326",
+          "holder": "Settings User",
           "expiry": "12/29"
         }
       ]
     }
   ],
-  "activeProfileId": "utkarsh"
+  "activeProfileId": "settings-user-1087"
 }

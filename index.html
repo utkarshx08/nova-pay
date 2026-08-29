@@ -104,10 +104,10 @@
           </div>
 
           <div class="mini-card">
-            <div class="card-top"><span>Monthly spending</span><span class="trend">+12%</span></div>
-            <strong>$3,842</strong>
-            <div class="progress"><span style="width:68%"></span></div>
-            <small>$5,600 monthly limit</small>
+            <div class="card-top"><span>Monthly spending</span><span class="trend" id="spendingTrend">+12%</span></div>
+            <strong id="spendingAmount">$3,842</strong>
+            <div class="progress"><span id="spendingProgress" style="width:68%"></span></div>
+            <small id="spendingLimit">$5,600 monthly limit</small>
           </div>
         </div>
 
@@ -196,6 +196,14 @@
         <button id="novaAIClearChat" aria-label="Clear conversation">Clear conversation</button>
       </div>
     </header>
+
+    <div class="nova-ai-banner" id="novaAIBanner" hidden>
+      <span class="banner-icon">⚠️</span>
+      <div class="banner-content">
+        <strong>Local Mode Active</strong>
+        <p>Nova AI is offline. Analyzing transactions locally.</p>
+      </div>
+    </div>
 
     <div class="nova-ai-messages" id="novaAIMessages" tabindex="0" aria-label="Conversation messages"></div>
 

@@ -31,7 +31,8 @@
   var state = {
     open: false,
     loading: false,
-    messages: []
+    messages: [],
+    isFallback: false
   };
 
   function getSnapshot() {
@@ -48,6 +49,8 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(safeMessages));
   }
 
+  var WARNING_PREFIX = "Nova AI is temporarily unavailable.\n\nI can still analyze your NovaPay transactions locally.\n\n";
+
   function loadMessages() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -56,6 +59,12 @@
         if (Array.isArray(parsed)) {
           state.messages = parsed.filter(function (m) {
             return m && (m.role === "user" || m.role === "ai") && typeof m.text === "string";
+          }).map(function (m) {
+            if (m.text.indexOf(WARNING_PREFIX) === 0) {
+              m.text = m.text.substring(WARNING_PREFIX.length);
+              state.isFallback = true;
+            }
+            return m;
           });
         }
       }
@@ -151,9 +160,10 @@
     if (typing) typing.remove();
   }
 
-  function renderQuickQuestions() {
+  function renderQuickQuestions(customQuestions) {
     quickEl.innerHTML = "";
-    QUICK_QUESTIONS.forEach(function (question) {
+    var list = customQuestions || QUICK_QUESTIONS;
+    list.forEach(function (question) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.textContent = question;
@@ -209,10 +219,11 @@
     try {
       return await fetchAIResponse(question);
     } catch (error) {
-      var fallback = analysis.localAnswer(question, snapshot);
+      var fallbackObj = analysis.localAnswer(question, snapshot);
       return {
         ok: true,
-        text: "Nova AI is temporarily unavailable.\n\nI can still analyze your NovaPay transactions locally.\n\n" + fallback,
+        text: fallbackObj.reply,
+        suggestions: fallbackObj.suggestions,
         fallback: true
       };
     }
@@ -241,7 +252,19 @@
     state.loading = false;
     updateSendState();
 
+    state.isFallback = !!result.fallback;
+    var banner = document.getElementById("novaAIBanner");
+    if (banner) {
+      banner.hidden = !state.isFallback;
+    }
+
     addMessage("ai", result.text, true);
+
+    if (result.suggestions && result.suggestions.length) {
+      renderQuickQuestions(result.suggestions);
+    } else {
+      renderQuickQuestions();
+    }
   }
 
   function clearConversation() {
@@ -318,6 +341,10 @@
 
   function init() {
     loadMessages();
+    var banner = document.getElementById("novaAIBanner");
+    if (banner) {
+      banner.hidden = !state.isFallback;
+    }
     renderMessages(false);
     renderQuickQuestions();
     updateSendState();
