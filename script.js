@@ -5,43 +5,52 @@ const BASE_CHART = [
 ];
 
 const state = {
-  balance: 12480,
+  balance: 13450,
   activeSearch: "",
   transactions: [
-    {merchant:"Car Insurance", date:"Aug 22, 2026", amount:-320, status:"Completed", icon:"◆"},
-    {merchant:"Salary", date:"Aug 20, 2026", amount:4500, status:"Completed", icon:"↗"},
-    {merchant:"Online Payment", date:"Aug 18, 2026", amount:-154, status:"Completed", icon:"◉"},
-    {merchant:"Electric Bill", date:"Aug 15, 2026", amount:-88, status:"Completed", icon:"ϟ"},
-    {merchant:"Grocery Store", date:"Aug 12, 2026", amount:-126, status:"Completed", icon:"✦"},
-    {merchant:"Freelance Income", date:"Aug 08, 2026", amount:980, status:"Completed", icon:"↗"}
+    { merchant: "Tech Superstore", date: "Sep 04, 2026", amount: -850, status: "Completed", icon: "✦" },
+    { merchant: "Car Insurance Premium", date: "Sep 02, 2026", amount: -320, status: "Completed", icon: "◆" },
+    { merchant: "Monthly Salary", date: "Sep 01, 2026", amount: 6500, status: "Completed", icon: "↗" },
+    { merchant: "Organic Grocery Market", date: "Aug 29, 2026", amount: -165, status: "Completed", icon: "✦" },
+    { merchant: "Freelance Client Payout", date: "Aug 26, 2026", amount: 1200, status: "Completed", icon: "↗" },
+    { merchant: "Uber Transport Pass", date: "Aug 24, 2026", amount: -95, status: "Completed", icon: "◉" },
+    { merchant: "Electric Bill Payment", date: "Aug 21, 2026", amount: -110, status: "Completed", icon: "ϟ" },
+    { merchant: "Spotify Family Subscription", date: "Aug 18, 2026", amount: -18, status: "Completed", icon: "⌁" },
+    { merchant: "Italian Restaurant & Bistro", date: "Aug 15, 2026", amount: -142, status: "Completed", icon: "✦" },
+    { merchant: "High-Speed Internet Bill", date: "Aug 12, 2026", amount: -75, status: "Completed", icon: "◌" },
+    { merchant: "Gym Membership", date: "Aug 08, 2026", amount: -60, status: "Completed", icon: "◆" },
+    { merchant: "Water Utility Bill", date: "Aug 05, 2026", amount: -45, status: "Completed", icon: "⌁" }
   ],
   activities: [
-    ["Water Bill","Successfully paid",-120,"⌁"],
-    ["Salary","Received",4500,"↗"],
-    ["Electric Bill","Successfully paid",-88,"ϟ"],
-    ["Internet Bill","Successfully paid",-62,"◌"],
-    ["Grocery Store","Card payment",-126,"✦"]
+    ["Tech Superstore", "Card payment - Electronics", -850, "✦"],
+    ["Car Insurance Premium", "Autopay executed", -320, "◆"],
+    ["Monthly Salary", "Direct deposit received", 6500, "↗"],
+    ["Organic Grocery Market", "Card payment", -165, "✦"],
+    ["Freelance Client Payout", "Transfer received", 1200, "↗"],
+    ["Electric Bill Payment", "Utility payment complete", -110, "ϟ"],
+    ["High-Speed Internet Bill", "Autopay completed", -75, "◌"]
   ],
   payments: [
-    ["Home Rent","Aug 30","$1,500"],
-    ["Car Insurance","Sep 02","$320"],
-    ["Streaming","Sep 05","$18"],
-    ["Internet","Sep 08","$62"]
+    ["Home Rent", "Sep 15", "$1,650"],
+    ["Health Insurance Premium", "Sep 18", "$280"],
+    ["Cloud Storage Annual", "Sep 22", "$120"],
+    ["Electric Utility Bill", "Sep 28", "$95"],
+    ["Car Loan EMI", "Oct 01", "$410"]
   ],
   chart: [...BASE_CHART],
   monthlyBudget: 40000,
-  savingsGoal: 15000,
-  savingsCurrent: 10200,
+  savingsGoal: 25000,
+  savingsCurrent: 16200,
   theme: "dark",
   settings: {
     notifications: true,
     weeklySummary: true,
-    biometric: false
+    biometric: true
   },
   cards: [
-    { name: "Primary", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
-    { name: "Virtual", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
-    { name: "Travel", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
+    { name: "Primary Rewards", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
+    { name: "Virtual Shopping Card", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
+    { name: "Travel Elite Visa", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
   ],
   profiles: [],
   activeProfileId: "utkarsh"
@@ -337,9 +346,10 @@ function setSection(section){
 function renderFullSection(section){
   const el=$("#"+section+"Section");
   if(section==="transactions"){
-    el.innerHTML=`<div class="panel"><div class="panel-head"><div><p class="eyebrow">All activity</p><h2>Transactions</h2></div><button class="primary" style="margin:0;padding:8px 14px" id="newTransferBtn">＋ New transfer</button></div><div class="table-wrap"><table><thead><tr><th>Merchant</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody id="allTransactions"></tbody></table></div></div>`;
+    el.innerHTML=`<div class="panel"><div class="panel-head"><div><p class="eyebrow">All activity</p><h2>Transactions</h2></div><div style="display:flex;gap:8px;"><button class="preset-btn" style="margin:0;padding:8px 14px" id="sectionExportBtn">📄 Export statement</button><button class="primary" style="margin:0;padding:8px 14px" id="newTransferBtn">＋ New transfer</button></div></div><div class="table-wrap"><table><thead><tr><th>Merchant</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody id="allTransactions"></tbody></table></div></div>`;
     renderAllTransactions(state.transactions);
     $("#newTransferBtn").onclick=()=>openMoneyModal("transfer");
+    if($("#sectionExportBtn")) $("#sectionExportBtn").onclick=()=>openExportStatementModal();
   } else if(section==="cards"){
     const cardsHtml = state.cards.map((card, i) => `
       <div class="virtual-card">
@@ -508,6 +518,8 @@ if($("#dropdownLogout")) $("#dropdownLogout").onclick=()=>showToast("Logged out 
 
 $("#helpBtn").onclick=openHelpModal;
 $("#logoutBtn").onclick=()=>showToast("Demo logout — session kept for preview");
+if ($("#exportStatementBtn")) $("#exportStatementBtn").onclick = () => openExportStatementModal();
+
 $("#searchInput").oninput=e=>{
   state.activeSearch = e.target.value;
   applyDashboardFilters();
@@ -824,3 +836,249 @@ initApp();
 const light = document.createElement("style");
 light.textContent=`body.light{--bg:#f4f5fa;--panel:#fff;--panel2:#f8f8fc;--text:#171827;--muted:#707489;background:#eef0f8}body.light .sidebar,body.light .topbar{background:#fff}body.light .panel,body.light .transfer-card,body.light .mini-card{background:#fff}body.light .search,body.light .round-btn,body.light .profile,body.light .nav-item:hover,body.light .nav-item.active,body.light .quick-actions button,body.light .panel-head select{background:#f4f4f9;color:#333}body.light .search input{color:#222}`;
 document.head.appendChild(light);
+
+// Statement Export Logic (1M, 3M, 6M, 1Y, Custom Date)
+let currentExportPeriod = "1m";
+let currentExportFilter = "all";
+
+function getFilteredTransactionsForStatement(period, filterType, customStart, customEnd) {
+  const now = new Date();
+  let startDate = new Date();
+
+  if (period === "1m") {
+    startDate.setDate(now.getDate() - 30);
+  } else if (period === "3m") {
+    startDate.setDate(now.getDate() - 90);
+  } else if (period === "6m") {
+    startDate.setDate(now.getDate() - 180);
+  } else if (period === "1y") {
+    startDate.setDate(now.getDate() - 365);
+  } else if (period === "custom" && customStart) {
+    startDate = new Date(customStart);
+  }
+
+  let endDate = (period === "custom" && customEnd) ? new Date(customEnd + "T23:59:59") : now;
+
+  return state.transactions.filter(t => {
+    const txDate = new Date(t.date);
+    const dateValid = isNaN(txDate.getTime()) || (txDate >= startDate && txDate <= endDate);
+    if (!dateValid) return false;
+
+    if (filterType === "expenses") return t.amount < 0;
+    if (filterType === "income") return t.amount > 0;
+    return true;
+  });
+}
+
+function openExportStatementModal() {
+  currentExportPeriod = "1m";
+  currentExportFilter = "all";
+  renderExportStatementModal();
+}
+
+function renderExportStatementModal() {
+  const customStartVal = $("#stmtStartDate") ? $("#stmtStartDate").value : "";
+  const customEndVal = $("#stmtEndDate") ? $("#stmtEndDate").value : "";
+
+  const txs = getFilteredTransactionsForStatement(currentExportPeriod, currentExportFilter, customStartVal, customEndVal);
+  const totalIncome = txs.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = Math.abs(txs.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
+  const netFlow = totalIncome - totalExpenses;
+
+  const currentProfile = state.profiles.find(p => p.id === state.activeProfileId) || { name: "Utkarsh" };
+
+  $("#modalContent").innerHTML = `
+    <h2>📄 Export Financial Statement</h2>
+    <p style="color:var(--muted);margin-bottom:16px;">Download or print account statements for <strong>${currentProfile.name}</strong>.</p>
+    
+    <div class="export-modal-container">
+      <div>
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:8px;">Statement Period</label>
+        <div class="preset-grid">
+          <button class="preset-btn ${currentExportPeriod === '1m' ? 'active' : ''}" data-period="1m">1 Month</button>
+          <button class="preset-btn ${currentExportPeriod === '3m' ? 'active' : ''}" data-period="3m">3 Months</button>
+          <button class="preset-btn ${currentExportPeriod === '6m' ? 'active' : ''}" data-period="6m">6 Months</button>
+          <button class="preset-btn ${currentExportPeriod === '1y' ? 'active' : ''}" data-period="1y">1 Year</button>
+          <button class="preset-btn ${currentExportPeriod === 'custom' ? 'active' : ''}" data-period="custom">Custom</button>
+        </div>
+      </div>
+
+      ${currentExportPeriod === 'custom' ? `
+        <div class="custom-date-grid">
+          <div>
+            <label>From Date</label>
+            <input type="date" id="stmtStartDate" value="${customStartVal}">
+          </div>
+          <div>
+            <label>To Date</label>
+            <input type="date" id="stmtEndDate" value="${customEndVal}">
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="statement-filter-row">
+        <label style="font-size:12px;font-weight:600;">Transaction Type</label>
+        <div class="filter-chip-group">
+          <button class="filter-chip ${currentExportFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+          <button class="filter-chip ${currentExportFilter === 'expenses' ? 'active' : ''}" data-filter="expenses">Expenses Only</button>
+          <button class="filter-chip ${currentExportFilter === 'income' ? 'active' : ''}" data-filter="income">Income Only</button>
+        </div>
+      </div>
+
+      <div class="statement-summary-box">
+        <div>
+          <span>Total Income</span>
+          <strong style="color:var(--green, #4caf50);">${money(totalIncome)}</strong>
+        </div>
+        <div>
+          <span>Total Expenses</span>
+          <strong style="color:#ef5350;">${money(-totalExpenses)}</strong>
+        </div>
+        <div>
+          <span>Net Cash Flow (${txs.length} txs)</span>
+          <strong style="color:${netFlow >= 0 ? 'var(--green, #4caf50)' : '#ef5350'};">${money(netFlow)}</strong>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="primary" id="downloadCsvBtn" style="flex:1;">📥 Download CSV</button>
+        <button class="preset-btn" id="printStatementBtn" style="flex:1;">🖨️ Print / Preview</button>
+      </div>
+    </div>
+  `;
+
+  $("#modalBackdrop").classList.add("open");
+
+  $$(".preset-grid .preset-btn").forEach(btn => {
+    btn.onclick = () => {
+      currentExportPeriod = btn.dataset.period;
+      renderExportStatementModal();
+    };
+  });
+
+  $$(".filter-chip").forEach(chip => {
+    chip.onclick = () => {
+      currentExportFilter = chip.dataset.filter;
+      renderExportStatementModal();
+    };
+  });
+
+  if ($("#stmtStartDate")) {
+    $("#stmtStartDate").onchange = () => renderExportStatementModal();
+  }
+  if ($("#stmtEndDate")) {
+    $("#stmtEndDate").onchange = () => renderExportStatementModal();
+  }
+
+  $("#downloadCsvBtn").onclick = () => {
+    downloadStatementCSV(txs, currentExportPeriod, currentProfile.name);
+  };
+
+  $("#printStatementBtn").onclick = () => {
+    printStatementPreview(txs, currentExportPeriod, totalIncome, totalExpenses, netFlow, currentProfile.name);
+  };
+}
+
+function downloadStatementCSV(txs, period, profileName) {
+  if (!txs.length) {
+    showToast("No transactions to export for selected range");
+    return;
+  }
+
+  let csvContent = "Date,Merchant,Category,Type,Amount,Status\n";
+  txs.forEach(t => {
+    const type = t.amount < 0 ? "Expense" : "Income";
+    const cat = categorizeMerchant(t.merchant);
+    csvContent += `"${t.date}","${t.merchant.replace(/"/g, '""')}","${cat}","${type}",${t.amount},"${t.status}"\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `NovaPay_Statement_${profileName.replace(/\s+/g, "_")}_${period}_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`Exported ${txs.length} transactions to CSV!`);
+}
+
+function printStatementPreview(txs, period, income, expenses, net, profileName) {
+  const printWin = window.open("", "_blank");
+  if (!printWin) {
+    showToast("Please allow popups to preview/print statement");
+    return;
+  }
+
+  const periodLabels = { "1m": "Last 1 Month (30 Days)", "3m": "Last 3 Months (90 Days)", "6m": "Last 6 Months (180 Days)", "1y": "Last 1 Year (365 Days)", "custom": "Custom Period" };
+  const periodText = periodLabels[period] || period;
+
+  const rowsHtml = txs.map(t => `
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid #ddd;">${t.date}</td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;">${t.merchant}</td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;">${categorizeMerchant(t.merchant)}</td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;color:${t.amount < 0 ? '#d32f2f' : '#2e7d32'};font-weight:bold;">
+        ${t.amount < 0 ? '-' : '+'}$${Math.abs(t.amount).toFixed(2)}
+      </td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;">${t.status}</td>
+    </tr>
+  `).join("");
+
+  printWin.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>NovaPay Statement - ${profileName}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 30px; color: #222; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #6f58c9; padding-bottom: 15px; margin-bottom: 20px; }
+        .logo { font-size: 24px; font-weight: bold; color: #6f58c9; }
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 10px; background: #6f58c9; color: white; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="logo">✦ NovaPay Statement</div>
+          <p style="margin:4px 0 0 0;color:#666;">Account Statement for <strong>${profileName}</strong></p>
+        </div>
+        <div style="text-align:right;">
+          <p style="margin:0;font-weight:bold;">Period: ${periodText}</p>
+          <p style="margin:4px 0 0 0;color:#666;font-size:12px;">Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div><small>Total Income</small><br><strong style="color:#2e7d32;font-size:18px;">+$${income.toFixed(2)}</strong></div>
+        <div><small>Total Expenses</small><br><strong style="color:#d32f2f;font-size:18px;">-$${expenses.toFixed(2)}</strong></div>
+        <div><small>Net Cash Flow</small><br><strong style="color:${net >= 0 ? '#2e7d32' : '#d32f2f'};font-size:18px;">$${net.toFixed(2)}</strong></div>
+      </div>
+
+      <h3>Transaction Details (${txs.length})</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Merchant</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">No transactions found</td></tr>'}
+        </tbody>
+      </table>
+      <script>
+        window.onload = function() { window.print(); };
+      </script>
+    </body>
+    </html>
+  `);
+  printWin.document.close();
+}

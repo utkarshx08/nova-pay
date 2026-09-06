@@ -17,31 +17,81 @@ const DEFAULT_STATE = {
       id: "utkarsh",
       name: "Utkarsh",
       avatar: "UT",
-      balance: 12480,
+      balance: 13450,
       transactions: [
-        {merchant:"Car Insurance", date:"Aug 22, 2026", amount:-320, status:"Completed", icon:"◆"},
-        {merchant:"Salary", date:"Aug 20, 2026", amount:4500, status:"Completed", icon:"↗"},
-        {merchant:"Online Payment", date:"Aug 18, 2026", amount:-154, status:"Completed", icon:"◉"},
-        {merchant:"Electric Bill", date:"Aug 15, 2026", amount:-88, status:"Completed", icon:"ϟ"},
-        {merchant:"Grocery Store", date:"Aug 12, 2026", amount:-126, status:"Completed", icon:"✦"},
-        {merchant:"Freelance Income", date:"Aug 08, 2026", amount:980, status:"Completed", icon:"↗"}
+        { merchant: "Tech Superstore", date: "Sep 04, 2026", amount: -850, status: "Completed", icon: "✦" },
+        { merchant: "Car Insurance Premium", date: "Sep 02, 2026", amount: -320, status: "Completed", icon: "◆" },
+        { merchant: "Monthly Salary", date: "Sep 01, 2026", amount: 6500, status: "Completed", icon: "↗" },
+        { merchant: "Organic Grocery Market", date: "Aug 29, 2026", amount: -165, status: "Completed", icon: "✦" },
+        { merchant: "Freelance Client Payout", date: "Aug 26, 2026", amount: 1200, status: "Completed", icon: "↗" },
+        { merchant: "Uber Transport Pass", date: "Aug 24, 2026", amount: -95, status: "Completed", icon: "◉" },
+        { merchant: "Electric Bill Payment", date: "Aug 21, 2026", amount: -110, status: "Completed", icon: "ϟ" },
+        { merchant: "Spotify Family Subscription", date: "Aug 18, 2026", amount: -18, "status": "Completed", icon: "⌁" },
+        { merchant: "Italian Restaurant & Bistro", date: "Aug 15, 2026", amount: -142, status: "Completed", icon: "✦" },
+        { merchant: "High-Speed Internet Bill", date: "Aug 12, 2026", amount: -75, status: "Completed", icon: "◌" },
+        { merchant: "Gym Membership", date: "Aug 08, 2026", amount: -60, status: "Completed", icon: "◆" },
+        { merchant: "Water Utility Bill", date: "Aug 05, 2026", amount: -45, status: "Completed", icon: "⌁" }
       ],
       activities: [
-        ["Water Bill","Successfully paid",-120,"⌁"],
-        ["Salary","Received",4500,"↗"],
-        ["Electric Bill","Successfully paid",-88,"ϟ"],
-        ["Internet Bill","Successfully paid",-62,"◌"],
-        ["Grocery Store","Card payment",-126,"✦"]
+        ["Tech Superstore", "Card payment - Electronics", -850, "✦"],
+        ["Car Insurance Premium", "Autopay executed", -320, "◆"],
+        ["Monthly Salary", "Direct deposit received", 6500, "↗"],
+        ["Organic Grocery Market", "Card payment", -165, "✦"],
+        ["Freelance Client Payout", "Transfer received", 1200, "↗"],
+        ["Electric Bill Payment", "Utility payment complete", -110, "ϟ"],
+        ["High-Speed Internet Bill", "Autopay completed", -75, "◌"]
       ],
       payments: [
-        ["Home Rent","Aug 30","$1,500"],
-        ["Car Insurance","Sep 02","$320"],
-        ["Streaming","Sep 05","$18"],
-        ["Internet","Sep 08","$62"]
+        ["Home Rent", "Sep 15", "$1,650"],
+        ["Health Insurance Premium", "Sep 18", "$280"],
+        ["Cloud Storage Annual", "Sep 22", "$120"],
+        ["Electric Utility Bill", "Sep 28", "$95"],
+        ["Car Loan EMI", "Oct 01", "$410"]
       ],
       monthlyBudget: 40000,
-      savingsGoal: 15000,
-      savingsCurrent: 10200,
+      savingsGoal: 25000,
+      savingsCurrent: 16200,
+      theme: "dark",
+      settings: {
+        notifications: true,
+        weeklySummary: true,
+        biometric: true
+      },
+      cards: [
+        { name: "Primary Rewards", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
+        { name: "Virtual Shopping Card", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
+        { name: "Travel Elite Visa", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
+      ]
+    },
+    {
+      id: "sarah-business",
+      name: "Sarah Jenkins",
+      avatar: "SJ",
+      balance: 34820,
+      transactions: [
+        { merchant: "Enterprise Retainer Payout", date: "Sep 03, 2026", amount: 8500, status: "Completed", icon: "↗" },
+        { merchant: "AWS Cloud Infrastructure", date: "Sep 01, 2026", amount: -640, status: "Completed", icon: "⚡" },
+        { merchant: "Downtown Office Space Rent", date: "Aug 30, 2026", amount: -2800, status: "Completed", icon: "🏠" },
+        { merchant: "Consulting Retainer Income", date: "Aug 25, 2026", amount: 4200, status: "Completed", icon: "↗" },
+        { merchant: "Business Travel & Hotel", date: "Aug 20, 2026", amount: -1150, status: "Completed", icon: "✈" },
+        { merchant: "Software Licenses & SaaS", date: "Aug 15, 2026", amount: -380, status: "Completed", icon: "💻" },
+        { merchant: "Client Dinner & Catering", date: "Aug 10, 2026", amount: -290, status: "Completed", icon: "🍷" }
+      ],
+      activities: [
+        ["Enterprise Retainer Payout", "Wire transfer received", 8500, "↗"],
+        ["AWS Cloud Infrastructure", "Monthly recurring bill", -640, "⚡"],
+        ["Downtown Office Space Rent", "Lease payment", -2800, "🏠"],
+        ["Consulting Retainer Income", "Payment received", 4200, "↗"],
+        ["Business Travel & Hotel", "Expense reimbursement", -1150, "✈"]
+      ],
+      payments: [
+        ["Payroll & Team Stipends", "Sep 15", "$4,500"],
+        ["Accounting & Tax Service", "Sep 20", "$850"],
+        ["Marketing Agency Retainer", "Sep 25", "$1,200"]
+      ],
+      monthlyBudget: 60000,
+      savingsGoal: 50000,
+      savingsCurrent: 32500,
       theme: "dark",
       settings: {
         notifications: true,
@@ -49,9 +99,45 @@ const DEFAULT_STATE = {
         biometric: false
       },
       cards: [
-        { name: "Primary", number: "4832", holder: "Utkarsh Tyagi", expiry: "08/29" },
-        { name: "Virtual", number: "9011", holder: "Utkarsh Tyagi", expiry: "08/29" },
-        { name: "Travel", number: "2744", holder: "Utkarsh Tyagi", expiry: "08/29" }
+        { name: "Corporate Platinum", number: "6109", holder: "Sarah Jenkins", expiry: "11/28" },
+        { name: "Business Operations Card", number: "3341", holder: "Sarah Jenkins", expiry: "04/30" }
+      ]
+    },
+    {
+      id: "alex-chen",
+      name: "Alex Chen",
+      avatar: "AC",
+      balance: 6240,
+      transactions: [
+        { merchant: "Part-Time AI Lab Stipend", date: "Sep 02, 2026", amount: 1800, status: "Completed", icon: "↗" },
+        { merchant: "Campus Bookstore", date: "Aug 31, 2026", amount: -210, status: "Completed", icon: "📚" },
+        { merchant: "City Metro Rail Pass", date: "Aug 27, 2026", amount: -65, status: "Completed", icon: "🚆" },
+        { merchant: "Supermarket Grocery Store", date: "Aug 24, 2026", amount: -88, status: "Completed", icon: "🛒" },
+        { merchant: "Student Meal Plan", date: "Aug 19, 2026", amount: -140, status: "Completed", icon: "🍔" },
+        { merchant: "GitHub Copilot Subscription", date: "Aug 14, 2026", amount: -10, status: "Completed", icon: "⚙" }
+      ],
+      activities: [
+        ["Part-Time AI Lab Stipend", "Direct deposit", 1800, "↗"],
+        ["Campus Bookstore", "Textbooks & Supplies", -210, "📚"],
+        ["City Metro Rail Pass", "Monthly Transit Pass", -65, "🚆"],
+        ["Supermarket Grocery Store", "Card payment", -88, "🛒"]
+      ],
+      payments: [
+        ["Dorm Room Utilities", "Sep 14", "$110"],
+        ["Mobile Phone Unlimited Plan", "Sep 19", "$45"],
+        ["Spotify Student", "Sep 25", "$5"]
+      ],
+      monthlyBudget: 15000,
+      savingsGoal: 8000,
+      savingsCurrent: 4500,
+      theme: "light",
+      settings: {
+        notifications: false,
+        weeklySummary: true,
+        biometric: false
+      },
+      cards: [
+        { name: "Student Cashback Card", number: "8823", holder: "Alex Chen", expiry: "06/29" }
       ]
     }
   ],
@@ -73,7 +159,7 @@ async function getSavedState() {
 
 const AI_API_KEY = process.env.AI_API_KEY || "";
 const AI_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
-const AI_API_URL = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
+const AI_API_URL = process.env.AI_API_URL || "https://api.op enai.com/v1/chat/completions";
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(ROOT_DIR));

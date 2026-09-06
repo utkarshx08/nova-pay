@@ -115,7 +115,7 @@
       "settings": {
         "notifications": true,
         "weeklySummary": true,
-        "biometric": false
+        "biometric": true
       },
       "cards": [
         {
@@ -198,5 +198,5 @@
       ]
     }
   ],
-  "activeProfileId": "settings-user-1087"
+  "activeProfileId": "utkarsh"
 }

@@ -326,8 +326,36 @@ Implementation:
 - Added a `.settings-delete-profile-btn` element to `renderSettingsProfileList()`.
 - Added the `deleteProfile(id)` handler in `script.js` which prompts the user for confirmation and removes the profile from `state.profiles` list, saving changes to the local server or localStorage.
 
+## Decision 25: Enriched Multi-Profile Mock Dataset
+Decision:
+- Populate `server/data.json`, `DEFAULT_STATE` in `server/server.js`, and default fallback state in `script.js` with comprehensive, realistic financial profiles and diverse transaction histories.
+
+Reason:
+- To provide a realistic demo experience with varied transactions (salary, freelance, tech supplies, groceries, utilities, subscriptions, business retainers), multiple categories, and distinct profiles (Utkarsh, Sarah Jenkins, Alex Chen).
+
+Implementation:
+- Created 3 detailed profiles: Utkarsh (Personal), Sarah Jenkins (Business & Consulting), and Alex Chen (Student & Tech).
+- Added categorized transactions, detailed activity logs, upcoming payment schedules, monthly budget targets, savings goals, and payment cards across all 3 profiles.
+- Ensured consistent default states across server data file (`server/data.json`), backend initial state (`DEFAULT_STATE` in `server/server.js`), and frontend fallback state (`script.js`).
+
+## Decision 26: Statement Export Feature with Preset & Custom Date Ranges
+Decision:
+- Add a dedicated "Export Statement" feature accessible from both the dashboard topbar and the Transactions section.
+- Support period presets for 1 Month (30d), 3 Months (90d), 6 Months (180d), 1 Year (365d), and Custom Date ranges, along with Expense/Income filtering.
+
+Reason:
+- To allow users to filter, inspect, and export their financial activity across specific timeframes in standard CSV spreadsheet formats or print-ready PDF statement previews.
+
+Implementation:
+- Added `#exportStatementBtn` in topbar (`index.html`) and `#sectionExportBtn` in Transactions panel (`script.js`).
+- Implemented `openExportStatementModal()` and `renderExportStatementModal()` with interactive period preset buttons, transaction type filter chips, and custom `From Date` and `To Date` input fields.
+- Implemented `getFilteredTransactionsForStatement()` date-range calculation and transaction filtering logic.
+- Implemented `downloadStatementCSV()` to generate Blob CSV files (`NovaPay_Statement_<Profile>_<Period>.csv`) containing Date, Merchant, Category, Type, Amount, and Status.
+- Implemented `printStatementPreview()` to render a clean printable HTML statement window with header metadata, financial totals summary, and transaction table, auto-triggering `window.print()`.
+- Added CSS styles for preset grid, filter chips, custom date inputs, and `@media print` rules in `styles.css`.
+
 ## Final Summary
-All major decisions for Nova AI were made to satisfy twelve constraints:
+All major decisions for Nova AI were made to satisfy fourteen constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
@@ -340,3 +368,6 @@ All major decisions for Nova AI were made to satisfy twelve constraints:
 - offer prominent profile creation and switching options in Settings, with offline fallbacks
 - enforce empty/zero-state defaults for new profiles to ensure a realistic fresh onboarding experience
 - provide safe profile deletion controls in Settings for all inactive profiles
+- provide rich, multi-category mock financial seed data across all profiles
+- support statement exports for 1M, 3M, 6M, 1Y, and Custom Date ranges in CSV and printable PDF formats
+

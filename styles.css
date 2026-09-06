@@ -143,3 +143,162 @@ body.light .dropdown-item:hover{background:#f4f4f9}
 body.light .active-profile {
   background: rgba(111, 88, 201, 0.1) !important;
 }
+
+/* Statement Export Button & Modal Styles */
+.export-statement-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-light, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  color: var(--text, #fff);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.export-statement-btn:hover {
+  background: var(--primary, #6f58c9);
+  color: #fff;
+  border-color: var(--primary, #6f58c9);
+  transform: translateY(-1px);
+}
+.export-statement-btn span {
+  font-size: 14px;
+}
+
+.export-modal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+}
+.preset-btn {
+  background: var(--surface-light, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  color: var(--text, #fff);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.preset-btn:hover {
+  border-color: var(--primary, #6f58c9);
+}
+.preset-btn.active {
+  background: var(--primary, #6f58c9);
+  color: #fff;
+  border-color: var(--primary, #6f58c9);
+  box-shadow: 0 4px 12px rgba(111, 88, 201, 0.35);
+}
+
+.custom-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: var(--surface-light, rgba(255, 255, 255, 0.04));
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+}
+.custom-date-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.custom-date-grid label {
+  font-size: 11px;
+  color: var(--muted, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.custom-date-grid input[type="date"] {
+  background: var(--bg-dark, #12131a);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
+  color: var(--text, #fff);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+body.light .custom-date-grid input[type="date"] {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #12131a;
+}
+
+.statement-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.filter-chip-group {
+  display: flex;
+  gap: 6px;
+}
+.filter-chip {
+  background: transparent;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.15));
+  color: var(--text, #fff);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.filter-chip.active {
+  background: rgba(111, 88, 201, 0.2);
+  border-color: var(--primary, #6f58c9);
+  color: var(--primary-light, #9d8beb);
+}
+
+.statement-summary-box {
+  background: var(--surface-light, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+.statement-summary-box div span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted, #999);
+}
+.statement-summary-box div strong {
+  font-size: 15px;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Printable Statement Layout */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-statement, .printable-statement * {
+    visibility: visible;
+  }
+  .printable-statement {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #111111 !important;
+    padding: 30px;
+    font-family: sans-serif;
+  }
+}
+
