@@ -366,13 +366,74 @@ Implementation:
 - Updated sidebar, topbar, cards, buttons, AI chat, statement modals, progress bars, chart bars, and badges to use crisp white backgrounds and crimson red gradients.
 - Updated `light.textContent` style override in `script.js` to match the white & red design system.
 
+## Decision 28: Production MySQL Database & Relational Schema Integration
+Decision:
+- Use **MySQL ONLY** as the database layer for NovaPay, driven by `mysql2/promise`. Remove all mock memory or static JSON persistence from active routes.
+
+Reason:
+- To provide enterprise-grade, persistent, scalable relational data storage supporting users, transactions, cards, accounts, budgets, goals, payments, and Nova AI chats.
+
+Implementation:
+- Created `database/schema.sql` defining 8 relational tables: `users`, `transactions`, `accounts`, `cards`, `budgets`, `goals`, `payments`, `ai_chats`.
+- Added foreign key constraints (`ON DELETE CASCADE`) and performance indexes on `email` and foreign keys.
+- Created `server/db.js` with `mysql2/promise` connection pool and database/schema auto-initializer.
+- Created `database/seed.sql` for initial environment seeding.
+
+## Decision 29: JWT HTTP-Only Cookie Authentication & Security Hardening
+Decision:
+- Implement production-style user authentication using `bcryptjs` password hashing and signed JWT tokens delivered via secure `HTTP-Only` cookies.
+
+Reason:
+- Protect user credentials and sessions against XSS token theft and brute force unauthorized access.
+
+Implementation:
+- Created auth endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `PUT /api/auth/change-password`.
+- Passwords stored as 10-round bcrypt hashes.
+- Built `server/middleware/auth.js` (`requireAuth`) to extract and verify HTTP-Only `novapay_token` cookie.
+- Integrated NovaPay Auth UI (Login & Create Account modals) in `index.html` with input validation, password toggle, error banners, and loading indicators.
+- Added security middleware: `helmet`, `cors`, `express-rate-limit`, `cookie-parser`.
+
+## Decision 30: Strict Multi-User Data Isolation
+Decision:
+- Enforce strict per-user query filtering using `WHERE user_id = req.user.id` across all database controllers.
+
+Reason:
+- Ensure complete data isolation so no user can view, edit, or delete another user's financial records.
+
+Implementation:
+- All controller queries (`transactionController.js`, `accountController.js`, `cardController.js`, `budgetController.js`, `goalController.js`, `paymentController.js`, `aiController.js`) extract `user_id` strictly from `req.user.id` set by `requireAuth` middleware.
+- Request payload `user_id` fields are ignored.
+
+## Decision 31: Default Zeroed Financial State
+Decision:
+- Configure all default budgets, account balances, card credit limits, savings goals, and scheduled payments to start at `0.00`.
+
+Reason:
+- Provide clean, unbloated initial onboarding where users manage their own real financial figures from zero.
+
+Implementation:
+- Updated `database/seed.sql`, `authController.js` registration seed, and `script.js` initial state so all financial values default to `0.00`.
+
+## Decision 32: Dynamic Multi-Region Currency Selector
+Decision:
+- Add a topbar Currency & Region dropdown allowing users to select their preferred currency on the fly and persist it to MySQL.
+
+Reason:
+- Accommodate international users from different regions with proper currency symbol formatting across the dashboard.
+
+Implementation:
+- Added Currency Selector dropdown button in topbar (`index.html`) with support for 7 currencies: 🇮🇳 **INR (₹)**, 🇺🇸 **USD ($)**, 🇪🇺 **EUR (€)**, 🇬🇧 **GBP (£)**, 🇯🇵 **JPY (¥)**, 🇨🇦 **CAD ($)**, 🇦🇺 **AUD ($)**.
+- Refactored money formatting functions (`money()`, `amountOnly()`) in `script.js` to dynamically format values using active currency symbol.
+- Updated chart Y-axis labels, analytics cards, payment lists, export statement previews, and Nova AI context to dynamically reflect the selected currency.
+- Persisted user currency selection to MySQL database via `PUT /api/users/profile`.
+
 ## Final Summary
-All major decisions for Nova AI were made to satisfy fifteen constraints:
+All major decisions for Nova AI and NovaPay were made to satisfy twenty constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
 - keep architecture modular and maintainable
-- enable dynamic local persistence of dashboard state and configurations
+- enable dynamic persistence of dashboard state and configurations via MySQL database
 - support multi-profile state mapping and dynamic wallet management
 - keep conversation bubbles clean of repetitive offline warning banners
 - deliver smarter and more flexible offline financial intent matching
@@ -380,8 +441,14 @@ All major decisions for Nova AI were made to satisfy fifteen constraints:
 - offer prominent profile creation and switching options in Settings, with offline fallbacks
 - enforce empty/zero-state defaults for new profiles to ensure a realistic fresh onboarding experience
 - provide safe profile deletion controls in Settings for all inactive profiles
-- provide rich, multi-category mock financial seed data across all profiles
+- provide rich, multi-category seed data across all profiles
 - support statement exports for 1M, 3M, 6M, 1Y, and Custom Date ranges in CSV and printable PDF formats
 - convert theme color system to a high-contrast Red & White color palette
+- implement MySQL-only database persistence with relational table structure
+- protect user sessions with HTTP-only JWT cookies and bcrypt password hashing
+- enforce strict multi-user data isolation on every database query
+- configure default budget, balance, goal, and payment values to zero
+- provide dynamic multi-region currency selector supporting INR, USD, EUR, GBP, JPY, CAD, and AUD
+
 
 

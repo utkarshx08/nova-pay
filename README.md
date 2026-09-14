@@ -1,361 +1,135 @@
-# 💳 NovaPay — Smart Finance Dashboard
+# NovaPay — Personal Finance Management Dashboard
 
-NovaPay is a modern **personal finance management dashboard** designed to help users track their money, analyze spending, manage transactions, monitor upcoming payments, and interact with an AI-powered financial assistant.
+NovaPay is a high-performance, full-stack Personal Finance Management Dashboard equipped with **Nova AI** assistant, production-style JWT authentication via HTTP-only cookies, and **MySQL** database persistence with multi-user data isolation.
 
-The project focuses on combining a clean fintech-style interface with practical financial management features.
-
----
-
-## ✨ Features
-
-### 📊 Interactive Dashboard
-
-* Available balance overview
-* Monthly spending tracker
-* Income and expense visualization
-* Cash-flow chart
-* Recent transaction activity
-* Upcoming payments
-* Quick money actions
-
-### 💸 Transaction Management
-
-* View transaction history
-* Search transactions
-* Track income and expenses
-* Transaction status indicators
-* Transaction details
-* Dynamic transaction updates
-
-### 💰 Money Management
-
-* Add money
-* Transfer money
-* Request money
-* Schedule payments
-* Track recurring payments
-* Monitor monthly spending limits
-
-### 💳 Card Management
-
-* Digital card interface
-* Multiple cards
-* Card status
-* Card information
-* Virtual card concept
-
-### 📈 Analytics
-
-NovaPay provides financial insights including:
-
-* Income analysis
-* Expense analysis
-* Savings analysis
-* Spending trends
-* Monthly comparisons
-* Financial health indicators
-
-### 🎯 Financial Goals
-
-Users can create and track goals such as:
-
-* Emergency fund
-* New laptop
-* Travel
-* Education
-* Major purchases
-
-### 🤖 Nova AI
-
-NovaPay includes an AI financial assistant designed to help users understand their finances.
-
-Example questions:
-
-> "How much did I spend this month?"
-
-> "Where am I spending the most?"
-
-> "Can I afford a ₹20,000 purchase?"
-
-> "How much should I save?"
-
-> "Show my unusual expenses."
-
-> "Give me financial advice."
-
-Nova AI can analyze:
-
-* Current balance
-* Income
-* Expenses
-* Transactions
-* Spending categories
-* Budgets
-* Upcoming payments
-* Financial goals
-
-The project also supports a **local/demo fallback mode** so the application can continue working without an AI API connection.
+> [!IMPORTANT]
+> **DATABASE ARCHITECTURE**: NovaPay uses **MySQL ONLY**. No MongoDB, SQLite, PostgreSQL, or mock in-memory stores are used in production.
 
 ---
 
-## 🎨 UI Design
+## 🌟 Key Features
 
-NovaPay uses a modern fintech-inspired design with:
-
-* Dark dashboard
-* Purple/cyan gradient cards
-* Responsive layout
-* Glassmorphism-inspired panels
-* Interactive charts
-* Smooth hover effects
-* Toast notifications
-* Modal dialogs
-* Mobile-friendly interface
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-* HTML5
-* CSS3
-* JavaScript
-* Responsive Design
-
-### Backend
-
-* Node.js
-* Express.js
-
-### Database
-
-* MongoDB
-
-### AI
-
-* AI API integration
-* Nova AI financial assistant
-* Local fallback financial analysis
-
-### Development Tools
-
-* VS Code
-* Git
-* GitHub
-* npm
+- **Real Production-Style Authentication**:
+  - Secure Registration & Login using `bcryptjs` password hashing (salt rounds = 10).
+  - Signed JWT tokens delivered via secure `HTTP-Only` cookies (`novapay_token`).
+  - Account Profile management (`PUT /api/users/profile`) & Password change support.
+- **Strict Multi-User Data Isolation**:
+  - Every financial query filters strictly using `req.user.id` from the authenticated session.
+  - Users can NEVER access or manipulate another user's financial records.
+- **MySQL Database Integration**:
+  - Relational schema support for `users`, `transactions`, `accounts`, `cards`, `budgets`, `goals`, `payments`, and `ai_chats`.
+  - Foreign key constraints with `ON DELETE CASCADE` and optimized indexes.
+- **Nova AI Financial Assistant**:
+  - Grounded financial advice using the authenticated user's real MySQL context.
+  - Per-user conversation history saved in `ai_chats`.
+- **Complete Financial Dashboard**:
+  - Real-time Balance tracking, Monthly spending metrics, Cash flow analytics charts.
+  - Transaction history filtering, CSV & PDF Statement Export.
+  - PCI-compliant Card wallet management (stores only safe display info like `last_four`).
 
 ---
 
-## 📁 Project Structure
+## 🛠️ Technology Stack
 
-```text
-NovaPay/
-│
-├── ai/
-│   ├── nova-ai.js
-│   └── financial-analysis.js
-│
-├── server/
-│   └── server.js
-│
-├── index.html
-├── script.js
-├── styles.css
-│
-├── package.json
-├── package-lock.json
-│
-├── .env.example
-├── .gitignore
-│
-└── README.md
+- **Frontend**: HTML5, CSS3 (Vanilla Glassmorphism Theme with Light/Dark Mode), JavaScript (ES6+)
+- **Backend**: Node.js, Express.js
+- **Database**: **MySQL ONLY** (driven by `mysql2/promise`)
+- **Authentication**: `bcryptjs`, `jsonwebtoken`, `cookie-parser`
+- **Security & Utilities**: `helmet`, `express-rate-limit`, `cors`, `dotenv`
+
+---
+
+## 🗄️ Database Schema & Architecture
+
+The database consists of 8 interconnected tables with foreign key constraints:
+
+```sql
+users (id, name, email [UNIQUE], password_hash, avatar, currency, created_at, updated_at)
+transactions (id, user_id [FK], type, title, category, amount, description, transaction_date)
+accounts (id, user_id [FK], name, account_type, balance, currency)
+cards (id, user_id [FK], card_name, last_four, card_type, credit_limit, available_limit, expiry_month, expiry_year)
+budgets (id, user_id [FK], category, amount, spent, month, year)
+goals (id, user_id [FK], name, target_amount, current_amount, deadline)
+payments (id, user_id [FK], title, amount, category, status, payment_date)
+ai_chats (id, user_id [FK], message, response, created_at)
+```
+
+Schema script: `database/schema.sql`  
+Seed script: `database/seed.sql`
+
+---
+
+## ⚙️ Environment Variables
+
+Copy `.env.example` to `.env`:
+
+```env
+PORT=5000
+
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=novapay
+
+JWT_SECRET=replace_with_a_long_random_secret
+
+NODE_ENV=development
+
+AI_API_KEY=
+AI_MODEL=gpt-4o-mini
+AI_API_URL=https://api.openai.com/v1/chat/completions
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Setup & Execution Instructions
 
-### 1. Clone the repository
+### 1. Install & Configure MySQL
+1. Ensure MySQL server is running locally (default port `3306`).
+2. Log into MySQL shell or Workbench and create the database:
+   ```sql
+   CREATE DATABASE novapay;
+   ```
+3. (Optional) Run the schema and seed scripts manually:
+   ```bash
+   mysql -u root -p novapay < database/schema.sql
+   mysql -u root -p novapay < database/seed.sql
+   ```
+   *Note: The Express server will also attempt auto-creation of database tables on startup.*
 
-```bash
-git clone https://github.com/YOUR-USERNAME/novapay.git
-```
-
-### 2. Navigate to the project
-
-```bash
-cd novapay
-```
-
-### 3. Install dependencies
-
+### 2. Install Node Dependencies
 ```bash
 npm install
 ```
 
-### 4. Create environment variables
-
-Create a `.env` file in the project root.
-
-```env
-PORT=3000
-AI_API_KEY=your_api_key_here
-```
-
-**Never commit your real ****`.env`**** file or API keys to GitHub.**
-
-The `.env` file should be included in `.gitignore`.
-
----
-
-## ▶️ Run the Application
-
-Start the development server:
-
-```bash
-npm start
-```
-
-Then open:
-
-```text
-http://localhost:3000
-```
-
-If your project uses a development script, you can also run:
-
+### 3. Start Development Server
 ```bash
 npm run dev
+# or
+npm start
 ```
+The server will start at: `http://localhost:5000`
 
 ---
 
-## 🤖 Nova AI Architecture
+## 🔒 Security Implementation Details
 
-Nova AI follows this basic flow:
-
-```text
-User
-  │
-  ▼
-NovaPay Dashboard
-  │
-  ▼
-Nova AI Chat
-  │
-  ▼
-Backend API
-  │
-  ├── Financial Data
-  │
-  ├── Transaction Analysis
-  │
-  └── AI Model
-          │
-          ▼
-     AI Response
-          │
-          ▼
-      Nova AI UI
-```
-
-The API key remains on the server and is **never exposed to the frontend**.
+1. **Password Protection**: Passwords are standard-hashed with `bcryptjs` before DB entry. Plaintext passwords or `password_hash` are never returned in responses.
+2. **HTTP-Only Token Cookies**: JWT authentication tokens are sent strictly as HTTP-only, SameSite cookies to mitigate XSS attacks.
+3. **Parameterized SQL Queries**: All database queries use `?` parameter placeholders via `mysql2/promise` to prevent SQL Injection.
+4. **Data Isolation**: Controllers enforce `WHERE user_id = req.user.id` on every query, discarding any `user_id` supplied in request payloads.
+5. **Security Headers & Rate Limiting**: Hardened using `helmet` and `express-rate-limit` on login/register endpoints.
 
 ---
 
-## 🔐 Security
+## 🧪 Testing Verification Flow
 
-NovaPay follows basic security practices for a portfolio project:
-
-* API keys stored in environment variables
-* `.env` excluded from Git
-* Backend API used for AI requests
-* Input validation
-* Error handling
-* No hardcoded API credentials
-
-> **Note:** NovaPay is a demonstration/portfolio project and is not connected to real banking infrastructure.
-
----
-
-## 📱 Responsive Design
-
-NovaPay is designed to work across:
-
-* 💻 Desktop
-* 🖥️ Large screens
-* 📱 Mobile
-* 📟 Tablet
-
-The dashboard automatically adapts to smaller screen sizes.
-
----
-
-## 🧠 Future Improvements
-
-Planned improvements include:
-
-* [ ] Real authentication
-* [ ] MongoDB transaction persistence
-* [ ] User profiles
-* [ ] Secure payment integration
-* [ ] Real-time notifications
-* [ ] Advanced AI financial insights
-* [ ] Automatic transaction categorization
-* [ ] Spending anomaly detection
-* [ ] Budget recommendations
-* [ ] Financial goal tracking
-* [ ] CSV/Excel bank statement import
-* [ ] Multi-currency support
-* [ ] PWA/mobile application
-* [ ] Dark/light theme improvements
-* [ ] Advanced financial reports
-* [ ] PDF transaction statements
-
----
-
-## 📸 Dashboard Preview
-
-NovaPay features a modern financial dashboard containing:
-
-* Balance overview
-* Quick money actions
-* Monthly spending
-* Cash-flow analytics
-* Recent activity
-* Transaction history
-* Upcoming payments
-* Nova AI assistant
-
----
-
-## ⚠️ Disclaimer
-
-NovaPay is an **educational and portfolio project**.
-
-It does not provide actual banking, payment-processing, investment, or financial-advisory services.
-
-Do not use real financial credentials, banking passwords, card information, or sensitive financial data with the demo application.
-
----
-
-## 👨‍💻 Author
-
-**Utkarsh**
-
-Computer Science / Engineering Student
-
----
-
-## ⭐ Support
-
-If you find this project useful, consider giving the repository a ⭐ on GitHub.
-
----
-
-## 📄 License
-
-This project is available for educational and portfolio purposes.
-
-You can add an appropriate open-source license such as **MIT License** if you decide to distribute the project publicly.
+1. **User Registration**: Register a new user e.g. `test@novapay.com` / `Password123`. Verify record creation in MySQL `users` table with hashed password.
+2. **Session Persistence**: Refresh the browser -> `GET /api/auth/me` validates cookie and keeps user authenticated.
+3. **Logout**: Click Logout -> `novapay_token` cookie is cleared, returning user to login UI.
+4. **Transaction & Card Persistence**: Add a transaction or card -> Verify creation in MySQL tables `transactions` and `cards`.
+5. **Multi-User Isolation Test**:
+   - Log in as User A (`a@test.com`), create a transaction of ₹50,000.
+   - Log out and register/log in as User B (`b@test.com`).
+   - Verify User B cannot see User A's transaction in their dashboard, API, or Nova AI assistant context.

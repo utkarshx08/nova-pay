@@ -57,6 +57,21 @@
           <button class="export-statement-btn" id="exportStatementBtn" title="Export Financial Statement">
             <span>📄</span><span>Export</span>
           </button>
+          <div class="profile-wrap">
+            <button class="export-statement-btn" id="currencySelectorBtn" title="Select Currency & Region">
+              <span id="currentCurrencySymbol">₹</span><span id="currentCurrencyCode">INR</span><b style="margin-left:2px;font-size:10px;">⌄</b>
+            </button>
+            <div class="profile-dropdown" id="currencyDropdown" hidden style="width: 160px;">
+              <div style="padding:4px 12px;font-size:10px;font-weight:bold;color:var(--muted)">CURRENCY & REGION</div>
+              <button class="dropdown-item currency-item" data-code="INR" data-symbol="₹">🇮🇳 INR (₹)</button>
+              <button class="dropdown-item currency-item" data-code="USD" data-symbol="$">🇺🇸 USD ($)</button>
+              <button class="dropdown-item currency-item" data-code="EUR" data-symbol="€">🇪🇺 EUR (€)</button>
+              <button class="dropdown-item currency-item" data-code="GBP" data-symbol="£">🇬🇧 GBP (£)</button>
+              <button class="dropdown-item currency-item" data-code="JPY" data-symbol="¥">🇯🇵 JPY (¥)</button>
+              <button class="dropdown-item currency-item" data-code="CAD" data-symbol="CA$">🇨🇦 CAD ($)</button>
+              <button class="dropdown-item currency-item" data-code="AUD" data-symbol="A$">🇦🇺 AUD ($)</button>
+            </div>
+          </div>
           <button class="round-btn" id="themeBtn" title="Toggle theme">☾</button>
           <div class="profile-wrap">
             <button class="round-btn notification" id="notifyBtn" title="Notifications">♢<i></i></button>
@@ -223,6 +238,79 @@
       <button id="novaAISend" type="submit" aria-label="Send message" disabled>➤</button>
     </form>
   </section>
+
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-brand">
+          <div class="brand-mark"><span></span><span></span><span></span></div>
+          <span>NovaPay</span>
+        </div>
+        <p id="authSubtitle">Sign in to access your personal finance dashboard</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Sign In</button>
+        <button class="auth-tab" id="tabRegister">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="auth-error" id="loginError"><span>⚠️</span><span id="loginErrorText"></span></div>
+        <div class="field-group">
+          <label for="loginEmail">Email Address</label>
+          <div class="input-wrap">
+            <input type="email" id="loginEmail" placeholder="e.g. utkarsh@novapay.com" required />
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPassword" placeholder="••••••••" required />
+            <button type="button" class="toggle-pwd" id="toggleLoginPwd" aria-label="Toggle password visibility">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-submit-btn" id="loginBtn">Sign In</button>
+        <div class="auth-footer">
+          Don't have an account? <button type="button" id="switchToRegister">Create Account</button>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form class="auth-form hidden" id="registerForm" novalidate>
+        <div class="auth-error" id="registerError"><span>⚠️</span><span id="registerErrorText"></span></div>
+        <div class="field-group">
+          <label for="regName">Full Name</label>
+          <div class="input-wrap">
+            <input type="text" id="regName" placeholder="e.g. Utkarsh Tyagi" required />
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="regEmail">Email Address</label>
+          <div class="input-wrap">
+            <input type="email" id="regEmail" placeholder="e.g. user@example.com" required />
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="regPassword">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="regPassword" placeholder="Min. 6 characters" required />
+            <button type="button" class="toggle-pwd" id="toggleRegPwd" aria-label="Toggle password visibility">👁</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="regConfirmPassword">Confirm Password</label>
+          <div class="input-wrap">
+            <input type="password" id="regConfirmPassword" placeholder="Confirm password" required />
+          </div>
+        </div>
+        <button type="submit" class="auth-submit-btn" id="registerBtn">Create Account & Launch Dashboard</button>
+        <div class="auth-footer">
+          Already have an account? <button type="button" id="switchToLogin">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="script.js"></script>
   <script src="ai/financial-analysis.js"></script>

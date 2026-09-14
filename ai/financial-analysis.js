@@ -1,6 +1,6 @@
 (function () {
   function fmt(amount, currency) {
-    const symbol = currency || "$";
+    const symbol = currency || "₹";
     return symbol + Math.abs(amount).toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 
@@ -10,7 +10,7 @@
 
   function parseAmountFromQuestion(question) {
     const cleaned = String(question || "").replace(/,/g, "");
-    const match = cleaned.match(/(?:rs\.?|inr|\$|₹)?\s*(\d+(?:\.\d+)?)/i);
+    const match = cleaned.match(/(?:rs\.?|inr|\$|₹|€|£|¥)?\s*(\d+(?:\.\d+)?)/i);
     return match ? Number(match[1]) : null;
   }
 
@@ -18,7 +18,10 @@
     var q = String(question || "");
     if (/₹|\binr\b|\brs\b/i.test(q)) return "₹";
     if (/\$|usd/i.test(q)) return "$";
-    return fallback || "$";
+    if (/€|eur/i.test(q)) return "€";
+    if (/£|gbp/i.test(q)) return "£";
+    if (/¥|jpy/i.test(q)) return "¥";
+    return fallback || "₹";
   }
 
   function getExpenses(snapshot) {
@@ -148,7 +151,7 @@
     copy.monthlyIncome = Number(copy.monthlyIncome || getIncome(copy));
     copy.monthlyExpenses = Number(copy.monthlyExpenses || getExpenses(copy));
     copy.upcomingTotal = Number(copy.upcomingTotal || (copy.upcomingPayments || []).reduce(function (sum, p) { return sum + Number(p.amount || 0); }, 0));
-    copy.currency = copy.currency || "$";
+    copy.currency = copy.currency || "₹";
     return copy;
   }
 
