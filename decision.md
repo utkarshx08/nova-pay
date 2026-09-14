@@ -354,8 +354,20 @@ Implementation:
 - Implemented `printStatementPreview()` to render a clean printable HTML statement window with header metadata, financial totals summary, and transaction table, auto-triggering `window.print()`.
 - Added CSS styles for preset grid, filter chips, custom date inputs, and `@media print` rules in `styles.css`.
 
+## Decision 27: Red & White Minimalist Theme Redesign
+Decision:
+- Redesign the application color scheme from dark purple/cyan to a high-contrast crisp White background with vibrant Red primary accents.
+
+Reason:
+- Satisfy user request to convert all blue/purple theme colors to Red and make all other surface/background colors White.
+
+Implementation:
+- Updated `:root` CSS variables in `styles.css`: `--bg: #ffffff`, `--panel: #ffffff`, `--panel2: #f8f9fa`, `--text: #111111`, `--purple: #e53935`, `--cyan: #ff5252`, `--primary: #e53935`.
+- Updated sidebar, topbar, cards, buttons, AI chat, statement modals, progress bars, chart bars, and badges to use crisp white backgrounds and crimson red gradients.
+- Updated `light.textContent` style override in `script.js` to match the white & red design system.
+
 ## Final Summary
-All major decisions for Nova AI were made to satisfy fourteen constraints:
+All major decisions for Nova AI were made to satisfy fifteen constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
@@ -370,4 +382,6 @@ All major decisions for Nova AI were made to satisfy fourteen constraints:
 - provide safe profile deletion controls in Settings for all inactive profiles
 - provide rich, multi-category mock financial seed data across all profiles
 - support statement exports for 1M, 3M, 6M, 1Y, and Custom Date ranges in CSV and printable PDF formats
+- convert theme color system to a high-contrast Red & White color palette
+
 

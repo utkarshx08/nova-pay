@@ -465,11 +465,10 @@ document.addEventListener("keydown", e=>{
   if(e.key === "Escape") $("#modalBackdrop").classList.remove("open");
 });
 $("#themeBtn").onclick=()=>{
-  const isLight = document.body.classList.toggle("light");
-  state.theme = isLight ? "light" : "dark";
-  $("#themeBtn").textContent = isLight ? "☀" : "☾";
+  state.theme = state.theme === "light" ? "dark" : "light";
+  applyThemeUI();
   saveStateToServer();
-  showToast("Theme toggled");
+  showToast(state.theme === "light" ? "Light theme enabled" : "Dark theme enabled");
 };
 $("#notifyBtn").onclick=(e)=> {
   e.stopPropagation();
@@ -832,10 +831,6 @@ async function initApp() {
   emitFinanceUpdate();
 }
 initApp();
-
-const light = document.createElement("style");
-light.textContent=`body.light{--bg:#f4f5fa;--panel:#fff;--panel2:#f8f8fc;--text:#171827;--muted:#707489;background:#eef0f8}body.light .sidebar,body.light .topbar{background:#fff}body.light .panel,body.light .transfer-card,body.light .mini-card{background:#fff}body.light .search,body.light .round-btn,body.light .profile,body.light .nav-item:hover,body.light .nav-item.active,body.light .quick-actions button,body.light .panel-head select{background:#f4f4f9;color:#333}body.light .search input{color:#222}`;
-document.head.appendChild(light);
 
 // Statement Export Logic (1M, 3M, 6M, 1Y, Custom Date)
 let currentExportPeriod = "1m";
