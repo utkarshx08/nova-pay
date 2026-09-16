@@ -220,6 +220,13 @@
     var budget = budgetSummary(snapshot);
     var anomalies = detectAnomalies(snapshot);
 
+    if (/^(hi|hello|hey|greetings|hola|good\s*(morning|afternoon|evening))/i.test(q)) {
+      return {
+        reply: "Hi 👋!\n\nI'm Nova AI, your personal financial assistant. I can help analyze your transactions, review your monthly budget, calculate affordability, and track savings goals.",
+        suggestions: ["How much did I spend this month?", "Where am I spending the most?", "Am I within my budget?"]
+      };
+    }
+
     var matchedCategory = null;
     if (/food|grocery|groceries|restaurant|eat/.test(q)) matchedCategory = "Food";
     else if (/bill|bills|rent|internet|electric|water|utility|utilities|insurance/.test(q)) matchedCategory = "Bills";
@@ -473,7 +480,7 @@
 
     // 13. Default query
     return {
-      reply: "I can help with spending breakdowns, budget status, affordability checks, unusual expenses, and savings planning. Try asking:\n- 'Am I within my budget?'\n- 'Where am I spending the most?'\n- 'Can I afford a ₹15,000 purchase?'",
+      reply: "Regarding your question: \"" + question + "\"\n\nHere is a summary of your financial status:\n- Account Balance: " + fmt(snapshot.currentBalance, currency) + "\n- Monthly Expenses: " + fmt(expenses, currency) + "\n- Budget Surplus/Deficit: " + fmt(budget.remaining, currency) + "\n\nFeel free to ask about specific categories (Food, Bills, Transport, Shopping), savings goals, or purchase affordability!",
       suggestions: ["Am I within my budget?", "Where am I spending the most?", "Can I afford a ₹20,000 purchase?"]
     };
   }

@@ -471,3 +471,31 @@ All major decisions for Nova AI and NovaPay were made to satisfy twenty-one cons
 - provide dynamic multi-region currency selector supporting INR, USD, EUR, GBP, JPY, CAD, and AUD
 - resolve offline status banner issue with credentialed session authentication and clean status state management
 
+## Decision 14: Nova AI Online & Offline Resilience
+Decision:
+- Clean API key parsing in `.env` and `aiController.js`.
+- Prevent message duplication in history array sent to AI model.
+- Automatically hide offline warning banner on active sessions.
+
+Reason:
+- Unsanitized API keys with quotes or leading spaces break upstream API authorizations, causing unnecessary fallbacks.
+- Message duplication in message history degraded LLM response quality.
+
+Implementation:
+- Stripped quotes and whitespace from `AI_API_KEY` in `.env` and `aiController.js`.
+- Updated `buildPayload` in `ai/nova-ai.js` and `handleNovaAIChat` in `aiController.js` to deduplicate current user messages from past conversation history.
+
+## Decision 15: Custom Message & Non-Destructive Database Guarantee
+Decision:
+- Enable intelligent server-side and client-side processing of custom user messages.
+- Strictly prohibit wiping, dropping, or truncating MySQL database tables and records.
+
+Reason:
+- Users expect Nova AI to respond meaningfully to any custom text inquiry (greetings, custom categories, specific merchant spending, affordability amounts), even when operating in fallback mode.
+- User financial data and accounts must be preserved across server restarts and AI module updates.
+
+Implementation:
+- Added `generateServerFallback(message, context, symbol)` in `aiController.js` and updated `localAnswer` in `financial-analysis.js` to dynamically evaluate custom message text against live MySQL user accounts, transactions, budgets, and goals.
+- Confirmed `initializeDatabase()` in `db.js` uses non-destructive `CREATE TABLE IF NOT EXISTS` schema validation without dropping existing tables or clearing data.
+
+

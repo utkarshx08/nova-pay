@@ -148,7 +148,7 @@ async function login(req, res) {
 }
 
 async function logout(req, res) {
-  res.clearCookie("novapay_token", COOKIE_OPTIONS());
+  res.clearCookie("novapay_token", { httpOnly: true, secure: false, sameSite: "strict" });
   return res.json({ success: true, message: "Logged out successfully." });
 }
 

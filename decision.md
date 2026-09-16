@@ -228,6 +228,7 @@ Implementation:
 
 ## Decision 17: Dynamic Local State Persistence
 Decision:
+
 - Save and load financial data and app settings to/from a local JSON file (`server/data.json`) when running on localhost.
 - Ensure the app falls back gracefully to localStorage or defaults when loaded statically (via `file:///`).
 
@@ -235,6 +236,8 @@ Reason:
 - To make the dashboard dynamic rather than static, allowing updates like transfers, top-ups, theme changes, and settings preferences to persist across page reloads.
 
 Implementation:
+
+
 - Created Express endpoints `GET /api/state` and `POST /api/state` in `server/server.js` to read and write `server/data.json`.
 - Integrated asynchronous startup `loadStateFromServer()` and save hooks `saveStateToServer()` in `script.js`.
 - Included settings values (notifications, weekly summary, biometric) and theme preferences directly in the state object.
@@ -393,7 +396,7 @@ Implementation:
 - Integrated NovaPay Auth UI (Login & Create Account modals) in `index.html` with input validation, password toggle, error banners, and loading indicators.
 - Added security middleware: `helmet`, `cors`, `express-rate-limit`, `cookie-parser`.
 
-## Decision 30: Strict Multi-User Data Isolation
+## Decision 30: Strict Multi-User Data Isolation0
 Decision:
 - Enforce strict per-user query filtering using `WHERE user_id = req.user.id` across all database controllers.
 
@@ -470,6 +473,34 @@ All major decisions for Nova AI and NovaPay were made to satisfy twenty-one cons
 - configure default budget, balance, goal, and payment values to zero
 - provide dynamic multi-region currency selector supporting INR, USD, EUR, GBP, JPY, CAD, and AUD
 - resolve offline status banner issue with credentialed session authentication and clean status state management
+
+## Decision 14: Nova AI Online & Offline Resilience
+Decision:
+- Clean API key parsing in `.env` and `aiController.js`.
+- Prevent message duplication in history array sent to AI model.
+- Automatically hide offline warning banner on active sessions.
+
+Reason:
+- Unsanitized API keys with quotes or leading spaces break upstream API authorizations, causing unnecessary fallbacks.
+- Message duplication in message history degraded LLM response quality.
+
+Implementation:
+- Stripped quotes and whitespace from `AI_API_KEY` in `.env` and `aiController.js`.
+- Updated `buildPayload` in `ai/nova-ai.js` and `handleNovaAIChat` in `aiController.js` to deduplicate current user messages from past conversation history.
+
+## Decision 15: Custom Message & Non-Destructive Database Guarantee
+Decision:
+- Enable intelligent server-side and client-side processing of custom user messages.
+- Strictly prohibit wiping, dropping, or truncating MySQL database tables and records.
+
+Reason:
+- Users expect Nova AI to respond meaningfully to any custom text inquiry (greetings, custom categories, specific merchant spending, affordability amounts), even when operating in fallback mode.
+- User financial data and accounts must be preserved across server restarts and AI module updates.
+
+Implementation:
+- Added `generateServerFallback(message, context, symbol)` in `aiController.js` and updated `localAnswer` in `financial-analysis.js` to dynamically evaluate custom message text against live MySQL user accounts, transactions, budgets, and goals.
+- Confirmed `initializeDatabase()` in `db.js` uses non-destructive `CREATE TABLE IF NOT EXISTS` schema validation without dropping existing tables or clearing data.
+
 
 
 

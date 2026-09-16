@@ -1,8 +1,9 @@
 const { query } = require("../db");
 
-const AI_API_KEY = process.env.AI_API_KEY || "";
-const AI_MODEL = process.env.AI_MODEL || "gpt-4o-mini";
-const AI_API_URL = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
+function getApiKey() {
+  const rawKey = process.env.AI_API_KEY || "";
+  return rawKey.trim().replace(/^["']|["']$/g, "");
+}
 
 function buildSystemPrompt(context, userName) {
   return [
@@ -30,6 +31,92 @@ function sanitizeMessages(messages) {
 
 const CURRENCY_SYMBOLS = { INR: "₹", USD: "$", EUR: "€", GBP: "£", JPY: "¥", CAD: "CA$", AUD: "A$" };
 function getSymbol(code) { return CURRENCY_SYMBOLS[code] || "₹"; }
+
+function generateServerFallback(message, context, symbol) {
+  const msg = message.toLowerCase().trim();
+  const userName = context.user?.name || "there";
+  const accounts = context.accounts || [];
+  const txs = context.recentTransactions || [];
+  const budgets = context.budgets || [];
+  const goals = context.goals || [];
+
+  const totalBalance = accounts.reduce((sum, a) => sum + parseFloat(a.balance || 0), 0);
+  const totalExpenses = txs
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+  // Greetings
+  if (/^(hi|hello|hey|greetings|hola|good\s*(morning|afternoon|evening))/i.test(msg)) {
+    return `Hi ${userName} 👋!\n\nI'm Nova AI, your financial assistant. Currently analyzing your ${accounts.length} account(s) with a total balance of ${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}.\n\nHow can I help you with your budget or expenses today?`;
+  }
+
+  // Balance query
+  if (/balance|how much (money|do i have)|account/i.test(msg)) {
+    let reply = `Your total account balance is **${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}** across ${accounts.length} account(s):\n`;
+    accounts.forEach((a) => {
+      reply += `- ${a.name} (${a.account_type}): ${symbol}${parseFloat(a.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}\n`;
+    });
+    return reply;
+  }
+
+  // Spend / Expense query
+  if (/spend|spent|expense|outgoings|cost/i.test(msg)) {
+    let reply = `Your recent recorded expenses total **${symbol}${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}**.\n`;
+    if (txs.length > 0) {
+      reply += "\nRecent transactions:\n";
+      txs.slice(0, 5).forEach((t) => {
+        reply += `- ${t.title} (${t.category}): ${symbol}${parseFloat(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} on ${t.date}\n`;
+      });
+    }
+    return reply;
+  }
+
+  // Budget query
+  if (/budget|limit/i.test(msg)) {
+    if (budgets.length === 0) {
+      return `You currently have no active budget caps set. Total spent recently is ${symbol}${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}.`;
+    }
+    let reply = `Here is your current budget status:\n`;
+    budgets.forEach((b) => {
+      const remaining = parseFloat(b.amount) - parseFloat(b.spent);
+      reply += `- **${b.category}**: Spent ${symbol}${parseFloat(b.spent).toLocaleString()} of ${symbol}${parseFloat(b.amount).toLocaleString()} (${remaining >= 0 ? symbol + remaining.toLocaleString() + ' remaining' : 'Over budget!'})\n`;
+    });
+    return reply;
+  }
+
+  // Goals query
+  if (/goal|save|savings/i.test(msg)) {
+    if (goals.length === 0) {
+      return `You don't have any specific financial goals created yet. Total balance is ${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}.`;
+    }
+    let reply = `Here are your current savings goals:\n`;
+    goals.forEach((g) => {
+      const target = parseFloat(g.target_amount || 0);
+      const current = parseFloat(g.current_amount || 0);
+      const pct = target > 0 ? Math.round((current / target) * 100) : 0;
+      reply += `- **${g.name}**: ${symbol}${current.toLocaleString()} / ${symbol}${target.toLocaleString()} (${pct}% complete)\n`;
+    });
+    return reply;
+  }
+
+  // Affordability query
+  const numMatch = msg.match(/(\d+(?:,\d+)?(?:\.\d+)?)/);
+  if (/afford|buy|purchase/i.test(msg) && numMatch) {
+    const cost = parseFloat(numMatch[1].replace(/,/g, ""));
+    if (cost > 0) {
+      if (totalBalance >= cost) {
+        const remaining = totalBalance - cost;
+        return `Yes, based on your current total balance of ${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}, you can afford this ${symbol}${cost.toLocaleString()} purchase. Remaining balance will be ${symbol}${remaining.toLocaleString(undefined, { minimumFractionDigits: 2 })}.`;
+      } else {
+        const shortfall = cost - totalBalance;
+        return `This ${symbol}${cost.toLocaleString()} purchase exceeds your total account balance (${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}) by ${symbol}${shortfall.toLocaleString(undefined, { minimumFractionDigits: 2 })}.`;
+      }
+    }
+  }
+
+  // General intelligent fallback for custom messages using live user numbers
+  return `Regarding "${message}":\n\nBased on your live account data:\n- Account Balance: ${symbol}${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n- Recent Expenses Total: ${symbol}${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n- Active Budgets: ${budgets.length}\n- Active Goals: ${goals.length}\n\nHow can I help you manage your budget or transactions further?`;
+}
 
 async function handleNovaAIChat(req, res) {
   const userId = req.user.id;
@@ -69,26 +156,28 @@ async function handleNovaAIChat(req, res) {
     goals: userGoals
   };
 
-  const history = sanitizeMessages(req.body?.messages);
+  const symbol = getSymbol(req.user.currency);
+  const apiKey = getApiKey();
+  const aiModel = process.env.AI_MODEL || "gpt-4o-mini";
+  const aiApiUrl = process.env.AI_API_URL || "https://api.openai.com/v1/chat/completions";
+
+  const rawHistory = sanitizeMessages(req.body?.messages);
+  // Deduplicate user message if it's already the last element in history
+  const history = (rawHistory.length > 0 && rawHistory[rawHistory.length - 1].role === "user" && rawHistory[rawHistory.length - 1].content === message)
+    ? rawHistory.slice(0, -1)
+    : rawHistory;
 
   let replyText = "";
-  const symbol = getSymbol(req.user.currency);
 
-  if (!AI_API_KEY) {
-    // If no API key configured, use local intelligent fallback grounded in user's real MySQL context
-    const spentThisMonth = userTransactions
-      .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
-    const balanceTotal = userAccounts.reduce((sum, a) => sum + parseFloat(a.balance || 0), 0);
-
-    replyText = `Based on your live account data:\n- Total Account Balance: ${symbol}${balanceTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n- Recent Expenses Total: ${symbol}${spentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n- Active Budgets: ${userBudgets.length}\n- Active Goals: ${userGoals.length}\n\nHow can I help you manage your budget further?`;
+  if (!apiKey) {
+    replyText = generateServerFallback(message, context, symbol);
   } else {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
 
     try {
       const body = {
-        model: AI_MODEL,
+        model: aiModel,
         temperature: 0.25,
         messages: [
           { role: "system", content: buildSystemPrompt(context, req.user.name) },
@@ -97,25 +186,24 @@ async function handleNovaAIChat(req, res) {
         ]
       };
 
-      const response = await fetch(AI_API_URL, {
+      const response = await fetch(aiApiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${AI_API_KEY}`
+          Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify(body),
         signal: controller.signal
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        replyText = `Local Assistant Mode: I noticed an upstream API response issue. However, your account total is ${req.user.currency || "₹"}${userAccounts.reduce((s, a) => s + parseFloat(a.balance || 0), 0)}.`;
+        replyText = generateServerFallback(message, context, symbol);
       } else {
         const data = await response.json();
-        replyText = data?.choices?.[0]?.message?.content?.trim() || "No response generated.";
+        replyText = data?.choices?.[0]?.message?.content?.trim() || generateServerFallback(message, context, symbol);
       }
     } catch (err) {
-      replyText = `I am operating in secure offline assistant mode for your account. You currently have ${userTransactions.length} recorded transactions and ${userAccounts.length} accounts connected.`;
+      replyText = generateServerFallback(message, context, symbol);
     } finally {
       clearTimeout(timeout);
     }

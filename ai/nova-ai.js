@@ -176,9 +176,12 @@
 
   function buildPayload(question) {
     var snapshot = getSnapshot();
+    var history = state.messages.filter(function (m) {
+      return !(m.role === "user" && m.text === question);
+    }).slice(-8);
     return {
       message: question,
-      messages: state.messages.slice(-8),
+      messages: history,
       context: analysis.buildAIContext(snapshot)
     };
   }
