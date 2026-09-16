@@ -62,7 +62,6 @@
           }).map(function (m) {
             if (m.text.indexOf(WARNING_PREFIX) === 0) {
               m.text = m.text.substring(WARNING_PREFIX.length);
-              state.isFallback = true;
             }
             return m;
           });
@@ -192,6 +191,7 @@
       var response = await fetch("/api/nova-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(buildPayload(question)),
         signal: controller.signal
       });

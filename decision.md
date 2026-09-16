@@ -427,8 +427,28 @@ Implementation:
 - Updated chart Y-axis labels, analytics cards, payment lists, export statement previews, and Nova AI context to dynamically reflect the selected currency.
 - Persisted user currency selection to MySQL database via `PUT /api/users/profile`.
 
+## Decision 33: Nova AI Offline Banner Fix & User-Friendly Session Auth
+Decision:
+- Fix the false "Local Mode Active / Nova AI is offline" status banner by adding `credentials: "include"` to `fetchAIResponse` in `ai/nova-ai.js` and eliminating sticky fallback flags during message loading.
+
+Reason:
+- The backend `/api/nova-ai` endpoint requires authentication via `requireAuth` middleware. When frontend fetch requests omitted `credentials: "include"`, HTTP 401 Unauthorized responses were returned, triggering the offline fallback logic and displaying alarming warning banners even when the backend was online.
+
+Implementation:
+1. Root Cause Analysis:
+   - Identified that `fetch("/api/nova-ai")` in `ai/nova-ai.js` did not send session cookies (`novapay_token`), causing `requireAuth` to respond with `401 Unauthorized`.
+   - The resulting fetch rejection forced Nova AI into local fallback mode (`state.isFallback = true`), showing the red "Local Mode Active" banner.
+   - Message initialization in `loadMessages()` previously restored `state.isFallback = true` from cached localStorage messages, keeping the banner visible across reloads.
+2. Code Fixes:
+   - Added `credentials: "include"` to the `fetch("/api/nova-ai", ...)` call in `ai/nova-ai.js`.
+   - Removed sticky fallback flag assignment (`state.isFallback = true`) in `loadMessages()` so Nova AI starts cleanly.
+   - Ensured `state.isFallback` automatically resets to `false` and hides `novaAIBanner` upon successful server responses.
+3. User Experience Impact:
+   - Nova AI communicates seamlessly with the server without false offline warnings.
+   - Smart database-grounded answers and live financial responses display cleanly without intrusive red banners.
+
 ## Final Summary
-All major decisions for Nova AI and NovaPay were made to satisfy twenty constraints:
+All major decisions for Nova AI and NovaPay were made to satisfy twenty-one constraints:
 - preserve existing NovaPay features
 - add secure AI capability
 - ensure demo reliability via fallback mode
@@ -449,6 +469,8 @@ All major decisions for Nova AI and NovaPay were made to satisfy twenty constrai
 - enforce strict multi-user data isolation on every database query
 - configure default budget, balance, goal, and payment values to zero
 - provide dynamic multi-region currency selector supporting INR, USD, EUR, GBP, JPY, CAD, and AUD
+- resolve offline status banner issue with credentialed session authentication and clean status state management
+
 
 
 
